@@ -6,13 +6,13 @@ class ApexClass
   attr_reader :body, :name, :folder
 
   def file_ext
-  	return '.cls'
+    return '.cls'
   end
 
   def initialize(options={})
-  	@body = options.Body
-  	@folder = 'classes'
-  	@name = folder + '/' + options.Name.to_s + file_ext
+    @body = options.Body
+    @folder = 'classes'
+    @name = folder + '/' + options.Name.to_s + file_ext
   end
 end
 
@@ -20,13 +20,13 @@ class ApexPage
   attr_reader :body, :name, :folder
 
   def file_ext
-  	return '.page'
+    return '.page'
   end
 
   def initialize(options={})
-  	@body = options.Markup
-  	@folder = 'pages'
-  	@name = folder + '/' + options.Name.to_s + file_ext
+    @body = options.Markup
+    @folder = 'pages'
+    @name = folder + '/' + options.Name.to_s + file_ext
   end
 end
 
@@ -34,13 +34,32 @@ class ApexComponent
   attr_reader :body, :name, :folder
 
   def file_ext
-  	return '.component'
+    return '.component'
   end
 
   def initialize(options={})
-  	@body = options.Markup
-  	@folder = 'components'
-  	@name = folder + '/' + options.Name.to_s + file_ext
+    @body = options.Markup
+    @folder = 'components'
+    @name = folder + '/' + options.Name.to_s + file_ext
+  end
+end
+
+class ApexStaticResource
+  attr_reader :body, :name, :folder
+
+  def file_ext
+    return '.resource'
+  end
+
+  def initialize(options={})
+    getBody options.Body
+    @folder = 'staticresources'
+    @name = folder + '/' + options.Name.to_s + file_ext
+  end
+
+  def getBody body_url
+    sf = Salesforce.new
+    @body = sf.get_body(body_url)
   end
 end
 
@@ -84,6 +103,19 @@ def pullComponent file_names
   files
 end
 
+# Pulls Down Static Resource Files individually
+# returns the files
+def pullResource file_names
+  files = []
+  file_names.each do |file_name|
+    file_request = @sfdc.get_resource( file_name )
+    cls = file_request.current_page[0]
+    files.push ApexStaticResource.new cls
+  end
+
+  files
+end
+
 def write files
   files.each do |sf_file|
     FileUtils.mkdir_p sf_file.folder
@@ -97,4 +129,5 @@ end
 files = pullClass( ["TestController"] )
 files.concat( pullPage( ["SendEmailWithSF_Attachments"] ) )
 files.concat( pullComponent( ["Test"] ) )
+files.concat( pullResource( ["sobject_lookup"] ) )
 write files
