@@ -1,3 +1,4 @@
+require 'restforce'
 require 'singleton'
 
 class Salesforce
