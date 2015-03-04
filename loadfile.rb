@@ -1,18 +1,29 @@
 require 'restforce'
 require 'fileutils'
-require_relative '../app/models/salesforce'
+require_relative 'salesforce'
 
 class ApexClass
-  attr_reader :body, :name, :folder
+  attr_reader :body, :name, :folder, :id
 
   def file_ext
     return '.cls'
   end
 
   def initialize(options={})
-    @body = options.Body
+    @body = options[:Body]
     @folder = 'classes'
-    @name = folder + '/' + options.Name.to_s + file_ext
+    @name = options[:Name]
+  end
+
+  def path
+    folder.to_s + "/" + name.to_s + file_ext.to_s
+  end
+
+  def pull
+    file_request = Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexClass+where+name=\'#{name}\'")
+    cls = file_request.current_page[0]
+    @body = cls.Body
+    @id = cls.Id
   end
 end
 
@@ -24,9 +35,20 @@ class ApexPage
   end
 
   def initialize(options={})
-    @body = options.Markup
+    @body = options[:Markup]
     @folder = 'pages'
-    @name = folder + '/' + options.Name.to_s + file_ext
+    @name = options[:Name]
+  end
+
+  def path
+    folder.to_s + "/" + name.to_s + file_ext.to_s
+  end
+
+  def pull
+    file_request = Salesforce.instance.query( "Select+Id,Name,Markup,SystemModstamp,NamespacePrefix+from+ApexPage+where+name=\'#{name}\'" )
+    cls = file_request.current_page[0]
+    @body = cls.Markup
+    @id = cls.Id
   end
 end
 
@@ -37,10 +59,21 @@ class ApexComponent
     return '.component'
   end
 
+  def path
+    folder.to_s + "/" + name.to_s + file_ext.to_s
+  end
+
   def initialize(options={})
-    @body = options.Markup
+    @body = options[:Markup]
     @folder = 'components'
-    @name = folder + '/' + options.Name.to_s + file_ext
+    @name = options[:Name]
+  end
+
+  def pull
+    file_request = Salesforce.instance.query( "Select+Id,Name,Markup,SystemModstamp,NamespacePrefix+from+ApexComponent+where+name=\'#{name}\'" )
+    cls = file_request.current_page[0]
+    @body = cls.Markup
+    @id = cls.Id
   end
 end
 
@@ -52,83 +85,42 @@ class ApexStaticResource
   end
 
   def initialize(options={})
-    get_body options.Body
+    @name = options[:Name]
     @folder = 'staticresources'
-    @content_type = options.ContentType
-    @name = folder + '/' + options.Name.to_s + file_ext
+  end
+
+  def path
+    folder.to_s + "/" + name.to_s + file_ext.to_s
+  end
+
+  def pull
+    file_request = Salesforce.instance.query("Select+Id,Name,ContentType,Body+from+StaticResource+where+name=\'#{name}\'")
+    cls = file_request.current_page[0]
+    @id = cls.Id
+    @content_type = cls.ContentType
+    @body = get_body cls.Body
   end
 
   def get_body body_url
-    sf = Salesforce.new
-    @body = sf.get_body(body_url)
+    @body = Salesforce.instance.restforce.get( body_url ).body
   end
-end
-
-
-# Pulls Down Apex Files individually
-# returns the files
-def pullClass file_names
-  files = []
-  file_names.each do |file_name|
-    file_request = @sfdc.get_class( file_name )
-    cls = file_request.current_page[0]
-    files.push ApexClass.new cls
-  end
-
-  files
-end
-
-# Pulls Down ApexPage Files individually
-# returns the files
-def pullPage file_names
-  files = []
-  file_names.each do |file_name|
-    file_request = @sfdc.get_page( file_name )
-    cls = file_request.current_page[0]
-    files.push ApexPage.new cls
-  end
-
-  files
-end
-
-# Pulls Down ApexComponent Files individually
-# returns the files
-def pullComponent file_names
-  files = []
-  file_names.each do |file_name|
-    file_request = @sfdc.get_component( file_name )
-    cls = file_request.current_page[0]
-    files.push ApexComponent.new cls
-  end
-
-  files
-end
-
-# Pulls Down Static Resource Files individually
-# returns the files
-def pullResource file_names
-  files = []
-  file_names.each do |file_name|
-    file_request = @sfdc.get_resource( file_name )
-    cls = file_request.current_page[0]
-    files.push ApexStaticResource.new cls
-  end
-
-  files
 end
 
 def write files
   files.each do |sf_file|
     FileUtils.mkdir_p sf_file.folder
-    f = File.new( sf_file.name, "w" )
+    f = File.new( sf_file.path, "w" )
     f.write( sf_file.body )
     f.close
   end
 end
 
-@sfdc = Salesforce.new
-files = pullClass( ["TestController"] )
-files.concat( pullPage( ["SendEmailWithSF_Attachments"] ) )
-files.concat( pullComponent( ["Test"] ) )
-files.concat( pullResource( ["sobject_lookup"] ) )
-write files
+cls = ApexClass.new( { :Name=>'TestController' } )
+cls.pull
+pg = ApexPage.new( {:Name=>"SendEmailWithSF_Attachments"} )
+pg.pull
+comp = ApexComponent.new( {:Name=>"Test"} )
+comp.pull
+resource = ApexStaticResource.new( {:Name=>"sobject_lookup"} )
+resource.pull
+write [cls, pg, comp, resource]
