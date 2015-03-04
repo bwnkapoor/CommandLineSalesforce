@@ -45,19 +45,20 @@ class ApexComponent
 end
 
 class ApexStaticResource
-  attr_reader :body, :name, :folder
+  attr_reader :body, :name, :folder, :content_type
 
   def file_ext
     return '.resource'
   end
 
   def initialize(options={})
-    getBody options.Body
+    get_body options.Body
     @folder = 'staticresources'
+    @content_type = options.ContentType
     @name = folder + '/' + options.Name.to_s + file_ext
   end
 
-  def getBody body_url
+  def get_body body_url
     sf = Salesforce.new
     @body = sf.get_body(body_url)
   end
