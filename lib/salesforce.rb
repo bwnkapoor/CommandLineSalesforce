@@ -3,14 +3,20 @@ require 'singleton'
 
 class Salesforce
   include Singleton
-  attr_reader :restforce
+  attr_reader :restforce, :sf
 
   def initialize(attributes={})
-    #host = 'test.salesforce.com'
     @restforce = Restforce.tooling :client_secret=>ENV["SF_CLIENT_SECRET"],
                                    :client_id=>"3MVG9fMtCkV6eLhcHZKdKpiBaGRD.nn9APDZwScPrrS1WNk0n7FZxiid9uUSJil3fxRC_jFE1Fk_McVoXI9uu",
                                    :username=>ENV["SF_USERNAME"],
-                                   :password=>ENV["SF_PASSWORD"]
+                                   :password=>ENV["SF_PASSWORD"],
+                                   :api_version=>SF_API_VERSION
+
+    @sf = Restforce.tooling :client_secret=>ENV["SF_CLIENT_SECRET"],
+                                   :client_id=>"3MVG9fMtCkV6eLhcHZKdKpiBaGRD.nn9APDZwScPrrS1WNk0n7FZxiid9uUSJil3fxRC_jFE1Fk_McVoXI9uu",
+                                   :username=>ENV["SF_USERNAME"],
+                                   :password=>ENV["SF_PASSWORD"],
+                                   :api_version=>SF_API_VERSION
   end
 
   def sobject_list
