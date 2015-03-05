@@ -32,10 +32,21 @@ class ApexClass
     @id = cls.Id
   end
 
+  def self.pull fileNames
+    classes = []
+    fileNames.each do |file|
+      cls = ApexClass.new( {Name: file} )
+      cls.pull
+      classes.push cls
+    end
+
+    classes
+  end
+
   def save( metadataContainer )
     id = Salesforce.instance.restforce.create( "ApexClassMember", Body: body,
                                                              MetadataContainerId: metadataContainer.id,
-                                                             ContentEntityId: '01pj0000003CtjZ'
+                                                             ContentEntityId: '01pj0000002iUjk'
                                             )
     puts id
   end

@@ -1,3 +1,4 @@
+require 'byebug'
 require 'fileutils'
 require 'date'
 require_relative 'lib/containerasyncrequest'
@@ -17,10 +18,8 @@ def write files
 end
 
 def pull
-  cls = ApexClass.new( { :Name=>'TestController' } )
-  cls.pull
-  cls2 = ApexClass.new( { :Name=>'TestController2' } )
-  cls2.pull
+  classes = ApexClass.pull( ["TestController", "TestController2"] )
+=begin
   pg = ApexPage.new( {:Name=>"SendEmailWithSF_Attachments"} )
   pg.pull
   comp = ApexComponent.new( {:Name=>"Test"} )
@@ -28,13 +27,15 @@ def pull
   resource = ApexStaticResource.new( {:Name=>"sobject_lookup"} )
   resource.pull
   write [cls, cls2, pg, comp, resource]
+=end
+  write classes
 end
 
 def push
   container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
   container.save()
   cls = ApexClass.new()
-  cls.load_from_local_file("humbug/TestController2.cls")
+  cls.load_from_local_file("classes/TestController.cls")
   saving_classes = { cls.name=>cls }
   puts cls.save( container )
   puts "saving..."
@@ -59,3 +60,5 @@ def push
     end
   end
 end
+
+pull
