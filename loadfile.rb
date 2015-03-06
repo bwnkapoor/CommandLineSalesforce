@@ -42,7 +42,8 @@ def apex_member_factory(type)
   elsif( type == ".component" )
     ApexComponent
   else
-    "Not Supported"
+    puts "Not Supported Type #{type}"
+    nil
   end
 end
 

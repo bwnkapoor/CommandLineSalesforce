@@ -3,6 +3,7 @@
 require_relative 'loadfile'
 require 'yaml'
 require 'find'
+require_relative 'lib/readpackagexml'
 
 @logins_path = '/home/justin/buildTool/build_tool.yaml'
 
@@ -20,7 +21,7 @@ task :pull, [:file_names] do |t, args|
   store_environment_login
   to_pull = args[:file_names]
   if !to_pull
-    ["SendEmailWithSF_Attachments.cls", "SendEmailWithSF_Attachments.page"]
+    to_pull = readPackageXML
   end
 
   if to_pull.class != Array
