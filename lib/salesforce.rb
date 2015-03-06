@@ -6,17 +6,20 @@ class Salesforce
   attr_reader :restforce, :sf
 
   def initialize(attributes={})
+    host = ENV["SF_HOST"]
     @restforce = Restforce.tooling :client_secret=>ENV["SF_CLIENT_SECRET"],
                                    :client_id=>"3MVG9fMtCkV6eLhcHZKdKpiBaGRD.nn9APDZwScPrrS1WNk0n7FZxiid9uUSJil3fxRC_jFE1Fk_McVoXI9uu",
                                    :username=>ENV["SF_USERNAME"],
                                    :password=>ENV["SF_PASSWORD"],
-                                   :api_version=>SF_API_VERSION
+                                   :api_version=>SF_API_VERSION,
+                                   :host=>host
 
     @sf = Restforce.tooling :client_secret=>ENV["SF_CLIENT_SECRET"],
                                    :client_id=>"3MVG9fMtCkV6eLhcHZKdKpiBaGRD.nn9APDZwScPrrS1WNk0n7FZxiid9uUSJil3fxRC_jFE1Fk_McVoXI9uu",
                                    :username=>ENV["SF_USERNAME"],
                                    :password=>ENV["SF_PASSWORD"],
-                                   :api_version=>SF_API_VERSION
+                                   :api_version=>SF_API_VERSION,
+                                   :host=>host
   end
 
   def sobject_list

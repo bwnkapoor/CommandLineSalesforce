@@ -17,28 +17,46 @@ def write files
   end
 end
 
-def pull
-  classes = ApexClass.pull( ["TestController", "TestController2"] )
-=begin
-  pg = ApexPage.new( {:Name=>"SendEmailWithSF_Attachments"} )
-  pg.pull
-  comp = ApexComponent.new( {:Name=>"Test"} )
-  comp.pull
-  resource = ApexStaticResource.new( {:Name=>"sobject_lookup"} )
-  resource.pull
-  write [cls, cls2, pg, comp, resource]
-=end
-  write classes
+def pull file_names
+  puts "pulling"
+  files = []
+  puts file_names.to_s
+  file_names.each do |file|
+    type = File.extname( file )
+    file_name = File.basename file, File.extname(file)
+    type = apex_member_factory( type )
+    if( type  )
+      member = type.pull( [file_name] )
+      files.concat( member )
+    end
+    puts "storing file..."
+  end
+  write files
+  puts "done"
 end
 
-def push
+def apex_member_factory(type)
+  if( type == ".cls" )
+    ApexClass
+  elsif( type == ".page" )
+    ApexPage
+  else
+    "Not Supported"
+  end
+end
+
+def push files_paths_to_save
+  puts 'pushing...'
   container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
   container.save()
-  cls = ApexClass.new()
-  cls.load_from_local_file("classes/TestController.cls")
-  saving_classes = { cls.name=>cls }
-  puts cls.save( container )
-  puts "saving..."
+  files_paths_to_save.each do |to_save_path|
+    cls = ApexClass.new()
+    cls.load_from_local_file(to_save_path)
+    saving_classes = { cls.name=>cls }
+    puts cls.save( container )
+    puts "saving..."
+  end
+
   asynch = ContainerAsyncRequest.new( container.id )
   deploy_id = asynch.save
   results = nil
@@ -49,16 +67,20 @@ def push
     results = results.body.current_page[0]
   end
 
+  has_errors = false
   results.DeployDetails.allComponentMessages.each do |message|
     fileName = message.fileName.to_s
     if message.success then puts "Success" else puts "Oh No!" end
     if !message.success
+      has_errors = true
       puts message.problem.to_s
       puts message.lineNumber.to_s
       puts message.problemType.to_s
-      puts saving_classes[fileName].local_name
+      #puts saving_classes[fileName].local_name
     end
   end
-end
 
-pull
+  if !has_errors
+    puts "Saved"
+  end
+end

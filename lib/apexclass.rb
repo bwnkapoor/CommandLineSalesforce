@@ -1,6 +1,8 @@
 require_relative 'salesforce'
+require_relative 'apexbase'
 
 class ApexClass
+  include ApexBase
   attr_reader :name, :folder, :id, :body, :local_name
 
   def file_ext
@@ -17,16 +19,10 @@ class ApexClass
     folder.to_s + "/" + name.to_s + file_ext.to_s
   end
 
-  def load_from_local_file file_path
-    file = File.open( file_path, 'r' )
-    @body = file.read
-    fName = File.basename file
-    @local_name = file_path
-    @name = "classes/#{fName}"
-  end
+
 
   def pull
-    file_request = Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexClass+where+name=\'#{name}\'")
+    file_request = get_class_sf_instance
     cls = file_request.current_page[0]
     @body = cls.Body
     @id = cls.Id
@@ -44,11 +40,15 @@ class ApexClass
   end
 
   def save( metadataContainer )
-    id = Salesforce.instance.restforce.create( "ApexClassMember", Body: body,
+    cls_member_id = Salesforce.instance.restforce.create( "ApexClassMember", Body: body,
                                                              MetadataContainerId: metadataContainer.id,
-                                                             ContentEntityId: '01pj0000002iUjk'
+                                                             ContentEntityId: id
                                             )
-    puts id
+    puts cls_member_id
+  end
+
+  def get_class_sf_instance( searching_name=name )
+    Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexClass+where+name=\'#{searching_name}\'")
   end
 
 end
