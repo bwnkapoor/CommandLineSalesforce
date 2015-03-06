@@ -14,23 +14,19 @@ task :save, [:file_paths] do |t, args|
   end
 
   push to_save
-        #args[:file_paths]]
-end
-
-def find_to_save
-  to_save = []
-  Find.find( '.' ) do |file|
-    if /.*[.].*[~]/.match( file )
-      actual_file = file.slice(0, file.length - 1)
-      to_save.push actual_file
-    end
-  end
-  to_save
 end
 
 task :pull, [:file_names] do |t, args|
   store_environment_login
-  pull ["SendEmailWithSF_Attachments.cls", "SendEmailWithSF_Attachments.page"]#args[:file_names]
+  to_pull = args[:file_names]
+  if !to_pull
+    ["SendEmailWithSF_Attachments.cls", "SendEmailWithSF_Attachments.page"]
+  end
+
+  if to_pull.class != Array
+    to_pull = [to_pull]
+  end
+  pull to_pull
 end
 
 task :login, [:client, :environment] do |t, args|
@@ -47,6 +43,13 @@ task :login, [:client, :environment] do |t, args|
   else
     puts "#{client} #{environment} does not exist"
   end
+end
+
+task :sfwho do
+  data = YAML.load_file @logins_path
+  client = data["client"]
+  sandbox = data["environment"]
+  puts "Client: \"#{client}\"\nEnvironment: \"#{sandbox}\""
 end
 
 def store_environment_login
@@ -69,4 +72,15 @@ def store_environment_login
   rescue Exception=>e
     puts "Ensure you have a \"username\" and \"password\" for #{client} #{sandbox}"
   end
+end
+
+def find_to_save
+  to_save = []
+  Find.find( '.' ) do |file|
+    if /.*[.].*[~]/.match( file )
+      actual_file = file.slice(0, file.length - 1)
+      to_save.push actual_file
+    end
+  end
+  to_save
 end

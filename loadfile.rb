@@ -39,6 +39,8 @@ def apex_member_factory(type)
     ApexClass
   elsif( type == ".page" )
     ApexPage
+  elsif( type == ".component" )
+    ApexComponent
   else
     "Not Supported"
   end
