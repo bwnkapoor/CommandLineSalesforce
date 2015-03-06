@@ -1,5 +1,3 @@
-# Add your own tasks in files placed in lib/tasks ending in .rake,
-# for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
 require_relative 'loadfile'
 require 'yaml'
 require 'find'
@@ -56,6 +54,20 @@ task :logins, [:client] do |t, args|
   end
 end
 
+task :chrome_incog, [:client, :environment] do |t, args|
+  client = get_creds( args )
+  server_url = client["is_production"] ? "login.salesforce.com" : "test.salesforce.com"
+  cmd = "google-chrome --incognito \"#{server_url}?un=#{client['username']}&pw=#{client['password']}\""
+  system cmd
+end
+
+task :chrome, [:client, :environment] do |t, args|
+  client = get_creds( args )
+  server_url = client["is_production"] ? "login.salesforce.com" : "test.salesforce.com"
+  cmd = "google-chrome \"#{server_url}?un=#{client['username']}&pw=#{client['password']}\""
+  system cmd
+end
+
 task :logout do
   data = YAML.load_file @logins_path
   data["client"] = ""
@@ -89,16 +101,7 @@ task :sfwho do
 end
 
 def store_environment_login
-  data = YAML.load_file @logins_path
-  client = data["client"]
-  sandbox = data["environment"]
-
-  begin
-    creds = data["clients"][client][sandbox]
-  rescue Exception=>e
-    puts "Please login first"
-    return
-  end
+  creds = who_am_i
 
   begin
     ENV["SF_USERNAME"] = creds["username"]
@@ -120,4 +123,28 @@ def find_to_save
     end
   end
   to_save
+end
+
+def who_am_i
+  data = YAML.load_file @logins_path
+  client = data["client"]
+  sandbox = data["environment"]
+  begin
+    creds = data["clients"][client][sandbox]
+  rescue Exception=>e
+    puts "Please login first"
+    return
+  end
+  creds
+end
+
+def get_creds( args )
+  client = args[:client]
+  enviro = args[:environment]
+  if( client && enviro )
+    data = YAML.load_file @logins_path
+    client = data["clients"][client][enviro]
+  else
+    client = who_am_i
+  end
 end
