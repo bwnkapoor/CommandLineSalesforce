@@ -56,6 +56,15 @@ task :logins, [:client] do |t, args|
   end
 end
 
+task :logout do
+  data = YAML.load_file @logins_path
+  data["client"] = ""
+  data["environment"] = ""
+  data["session_id"] = ""
+
+  File.open(@logins_path, 'w') { |f| YAML.dump(data, f) }
+end
+
 task :login, [:client, :environment] do |t, args|
   client = args[:client]
   environment = args[:environment]
