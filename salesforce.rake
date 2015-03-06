@@ -30,6 +30,21 @@ task :pull, [:file_names] do |t, args|
   pull to_pull
 end
 
+task :logins, [:client] do |t, args|
+  data = YAML.load_file @logins_path
+  if( args[:client] )
+    data["clients"][args[:client]].each_key do |sandbox|
+      puts "#{args[:client]},#{sandbox}"
+    end
+  else
+    data["clients"].each_key do |client|
+      data["clients"][client].each_key do |sandbox|
+        puts "#{client},#{sandbox}"
+      end
+    end
+  end
+end
+
 task :login, [:client, :environment] do |t, args|
   client = args[:client]
   environment = args[:environment]
