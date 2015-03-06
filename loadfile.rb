@@ -29,7 +29,6 @@ def pull file_names
       member = type.pull( [file_name] )
       files.concat( member )
     end
-    puts "storing file..."
   end
   write files
   puts "done"
@@ -50,11 +49,18 @@ def push files_paths_to_save
   container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
   container.save()
   files_paths_to_save.each do |to_save_path|
-    cls = ApexClass.new()
-    cls.load_from_local_file(to_save_path)
-    saving_classes = { cls.name=>cls }
-    puts cls.save( container )
-    puts "saving..."
+    type = File.extname( to_save_path )
+    file_name = File.basename to_save_path, File.extname(to_save_path)
+    type = apex_member_factory( type )
+    if( type )
+      cls = type.new()
+      cls.load_from_local_file(to_save_path)
+      saving_classes = { cls.name=>cls }
+      puts cls.save( container )
+      puts "saving..."
+    else
+      puts "Failed to save #{to_save_path}"
+    end
   end
 
   asynch = ContainerAsyncRequest.new( container.id )
