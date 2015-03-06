@@ -17,6 +17,13 @@ task :save, [:file_paths] do |t, args|
   push to_save
 end
 
+task :active do
+  data = YAML.load_file @logins_path
+  client = data["client"]
+  sandbox = data["environment"]
+  puts "#{client},#{sandbox}"
+end
+
 task :pull, [:file_names] do |t, args|
   store_environment_login
   to_pull = args[:file_names]
