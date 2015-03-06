@@ -94,8 +94,9 @@ def store_environment_login
   begin
     ENV["SF_USERNAME"] = creds["username"]
     ENV["SF_PASSWORD"] = creds["password"]
+    isProd = creds["is_production"]
     ENV["SF_CLIENT_SECRET"] = "2764242436952695913"
-    ENV["SF_HOST"] = "login.salesforce.com"
+    ENV["SF_HOST"] = isProd ? "login.salesforce.com" : "test.salesforce.com"
   rescue Exception=>e
     puts "Ensure you have a \"username\" and \"password\" for #{client} #{sandbox}"
   end
