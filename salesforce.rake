@@ -33,8 +33,12 @@ end
 task :logins, [:client] do |t, args|
   data = YAML.load_file @logins_path
   if( args[:client] )
-    data["clients"][args[:client]].each_key do |sandbox|
-      puts "#{args[:client]},#{sandbox}"
+    begin
+      data["clients"][args[:client]].each_key do |sandbox|
+        puts "#{args[:client]},#{sandbox}"
+      end
+    rescue Exception=>e
+      puts "The Client: \"#{args[:client]}\" does not have a login"
     end
   else
     data["clients"].each_key do |client|
