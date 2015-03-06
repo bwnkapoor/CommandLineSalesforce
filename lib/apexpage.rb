@@ -42,7 +42,7 @@ class ApexPage
   end
 
   def save( metadataContainer )
-    cls_member_id = Salesforce.instance.restforce.create( "ApexClassMember", Body: body,
+    cls_member_id = Salesforce.instance.restforce.create( "ApexPageMember", Body: body,
                                                              MetadataContainerId: metadataContainer.id,
                                                              ContentEntityId: id
                                             )
