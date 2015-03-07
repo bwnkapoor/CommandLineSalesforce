@@ -1,9 +1,11 @@
 require 'restforce'
+require 'salesforce_bulk'
+require 'byebug'
 require 'singleton'
 
 class Salesforce
   include Singleton
-  attr_reader :restforce, :sf
+  attr_reader :restforce, :sf, :bulk
 
   def initialize(attributes={})
     host = ENV["SF_HOST"]
@@ -20,6 +22,7 @@ class Salesforce
                                    :password=>ENV["SF_PASSWORD"],
                                    :api_version=>SF_API_VERSION,
                                    :host=>host
+    @bulk = SalesforceBulk::Api.new( ENV["SF_USERNAME"], ENV["SF_PASSWORD"], false )
   end
 
   def sobject_list

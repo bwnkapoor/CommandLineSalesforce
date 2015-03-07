@@ -9,7 +9,9 @@ module ApexBase
       puts "#{fName}"
       base_file_name = File.basename file, File.extname(file)
       sf_instance = get_class_sf_instance base_file_name
-      @id = sf_instance.current_page[0].Id
+      if sf_instance
+        @id = sf_instance.current_page[0].Id
+      end
     end
 
     @name = "#{folder}/#{fName}"

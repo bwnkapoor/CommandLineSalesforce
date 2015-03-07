@@ -1,6 +1,7 @@
 require_relative 'loadfile'
 require 'yaml'
 require 'find'
+require_relative 'dependencies'
 require_relative 'lib/readpackagexml'
 
 @logins_path = '/home/justin/buildTool/build_tool.yaml'
@@ -22,6 +23,11 @@ task :active do
   puts "#{client},#{sandbox}"
 end
 
+task :creds, [:client, :environment] do |t, args|
+  t = get_creds( args )
+  puts "Username: #{t['username']}\nPassword: #{t['password']}"
+end
+
 task :force, [:client, :environment] do |t, args|
   client = get_creds( args )
   cmd = "force login "
@@ -34,22 +40,45 @@ end
 
 task :play, [:file_name] do |t, args|
   store_environment_login
-  file_name = args[:file_name]
-  name_to_dependencies = {}
-  readPackage.each do |member|
-    if member.name == "ApexClass"
-      member.members.each do |cls_name|
-        cls = ApexClass.new({Name: cls_name})
-        cls.get_dependencies
-        name_to_dependencies[cls_name] = cls.dependencies
-        puts cls.name
-        puts cls.dependencies.to_s
-      end
-    end
-  end
+  #records_to_delete = Array.new
+  #records_to_delete.push( Hash[{"id"=>"01p17000000DNfyAAG"}] )
+  x = Salesforce.instance.restforce.destroy( "ApexClass", "01pG0000004sytgIAA" )
+=begin
+  records_to_delete = []
+  to_delete = {"Id"=>"01pj0000003DYg4AAG"}
+  records_to_delete.push( to_delete )
+  x = Salesforce.instance.bulk.delete( "ApexClass", records_to_delete, true )
+=end
   byebug
-  puts name_to_dependencies
-  puts "Hope you had fun"
+  puts "Hello"
+end
+
+task :compile_find_dependencies, [:file_name] do |t, args|
+  store_environment_login
+=begin
+  file_name = args[:file_name]
+  puts "Reading package.xml"
+  classes = find_members_of_type_in_package 'ApexClass'
+  classes = ApexClass.dependencies classes
+  File.open('test.yml', 'w') {|f| f.write classes.to_yaml }
+=end
+  data = YAML.load_file 'test.yml'
+  puts data.keys.length
+  name_to_dependencies = remove_non_keys( data )
+  cyclical = findStrongTies(name_to_dependencies)
+
+  puts "The following items have Cyclical Dependencies #{cyclical}"
+
+  puts "We have cyclical: #{cyclical.length}"
+
+  name_to_dependencies = non_cyclical( name_to_dependencies )
+  byebug
+  to_sort = remove_non_keys( name_to_dependencies )
+  byebug
+  our_sort = to_sort.tsort
+  puts "We can remove: #{our_sort.length} items here is the order\n"
+  puts our_sort
+
 end
 
 task :pull, [:file_names] do |t, args|
@@ -71,6 +100,7 @@ task :logins, [:client] do |t, args|
     begin
       data["clients"][args[:client]].each_key do |sandbox|
         puts "#{args[:client]},#{sandbox}"
+
       end
     rescue Exception=>e
       puts "The Client: \"#{args[:client]}\" does not have a login"

@@ -3,7 +3,6 @@ require_relative 'apexbase'
 
 class ApexClass
   include ApexBase
-  attr_accessor :dependencies
   attr_reader :name, :folder, :id, :body, :local_name
 
   def file_ext
@@ -20,17 +19,18 @@ class ApexClass
     folder.to_s + "/" + name.to_s + file_ext.to_s
   end
 
-  def get_dependencies
-    @dependencies = []
-    x = Salesforce.instance.metadata_query("Select SymbolTable, FullName from ApexClassMember where FullName = \'#{name}\' order by createddate desc limit 1")
+  def self.get_dependencies class_name
+    dependencies = []
+    x = Salesforce.instance.metadata_query("Select SymbolTable, FullName from ApexClassMember where FullName = \'#{class_name}\' order by createddate desc limit 1")
     x.body.current_page.each do |classMember|
       if classMember.SymbolTable
         classMember.SymbolTable.externalReferences.each do |xRef|
-          @dependencies.push xRef.name.to_s
+          dependencies.push xRef.name.to_s
         end
       end
     end
-    @dependencies
+    puts "Dependencies for #{class_name}\n#{dependencies}"
+    dependencies
   end
 
   def pull
@@ -49,6 +49,16 @@ class ApexClass
     end
 
     classes
+  end
+
+  def self.dependencies class_names
+    name_to_dependencies = {}
+    class_names = if class_names.class == Array then class_names else [class_names] end
+    class_names.each do |cls_name|
+      name_to_dependencies[cls_name] = ApexClass.get_dependencies cls_name
+    end
+
+    name_to_dependencies
   end
 
   def save( metadataContainer )

@@ -51,6 +51,7 @@ def push files_paths_to_save
   puts 'pushing...'
   container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
   container.save()
+  if files_paths_to_save.class != Array then files_paths_to_save = [files_paths_to_save] end
   files_paths_to_save.each do |to_save_path|
     type = File.extname( to_save_path )
     file_name = File.basename to_save_path, File.extname(to_save_path)

@@ -54,3 +54,15 @@ def readPackage
   end
   all_members
 end
+
+def find_members_of_type_in_package type
+  classes = []
+  readPackage.each do |member|
+    if member.name == type
+      member.members.each do |cls_name|
+        classes.push cls_name
+      end
+    end
+  end
+  classes
+end
