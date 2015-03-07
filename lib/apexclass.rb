@@ -3,6 +3,7 @@ require_relative 'apexbase'
 
 class ApexClass
   include ApexBase
+  attr_accessor :dependencies
   attr_reader :name, :folder, :id, :body, :local_name
 
   def file_ext
@@ -19,17 +20,17 @@ class ApexClass
     folder.to_s + "/" + name.to_s + file_ext.to_s
   end
 
-  def dependencies
-    dependencies = []
+  def get_dependencies
+    @dependencies = []
     x = Salesforce.instance.metadata_query("Select SymbolTable, FullName from ApexClassMember where FullName = \'#{name}\' order by createddate desc limit 1")
     x.body.current_page.each do |classMember|
       if classMember.SymbolTable
         classMember.SymbolTable.externalReferences.each do |xRef|
-          dependencies.push xRef.name.to_s
+          @dependencies.push xRef.name.to_s
         end
       end
     end
-    dependencies
+    @dependencies
   end
 
   def pull

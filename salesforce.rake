@@ -22,6 +22,36 @@ task :active do
   puts "#{client},#{sandbox}"
 end
 
+task :force, [:client, :environment] do |t, args|
+  client = get_creds( args )
+  cmd = "force login "
+  if !client["is_production"]
+    cmd += "-i=test "
+  end
+  cmd += "-u=#{client['username']} -p=#{client['password']}"
+  system cmd
+end
+
+task :play, [:file_name] do |t, args|
+  store_environment_login
+  file_name = args[:file_name]
+  name_to_dependencies = {}
+  readPackage.each do |member|
+    if member.name == "ApexClass"
+      member.members.each do |cls_name|
+        cls = ApexClass.new({Name: cls_name})
+        cls.get_dependencies
+        name_to_dependencies[cls_name] = cls.dependencies
+        puts cls.name
+        puts cls.dependencies.to_s
+      end
+    end
+  end
+  byebug
+  puts name_to_dependencies
+  puts "Hope you had fun"
+end
+
 task :pull, [:file_names] do |t, args|
   store_environment_login
   to_pull = args[:file_names]

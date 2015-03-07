@@ -1,6 +1,7 @@
 require 'nokogiri'
 
 class ApexMember
+  attr_reader :name, :members
 
   def initialize( name )
     @members = []
@@ -30,6 +31,14 @@ class ApexMember
 end
 
 def readPackageXML
+  all_members = []
+  readPackage.each do |member|
+    all_members.concat( clsMember.with_extensions )
+  end
+  all_members
+end
+
+def readPackage
   file = File.open 'package.xml'
   doc = Nokogiri::XML( file )
   types = doc.css("types")
@@ -41,7 +50,7 @@ def readPackageXML
       child_name = member.children[0].text
       clsMember.add( child_name )
     end
-    all_members.concat( clsMember.with_extensions )
+    all_members.push( clsMember )
   end
   all_members
 end
