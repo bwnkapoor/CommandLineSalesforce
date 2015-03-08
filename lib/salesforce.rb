@@ -1,9 +1,11 @@
 require 'restforce'
 require 'byebug'
 require 'singleton'
+require 'httparty'
 
 class Salesforce
   include Singleton
+  include HTTParty
   attr_reader :restforce, :sf, :bulk
 
   def initialize(attributes={})
@@ -21,6 +23,8 @@ class Salesforce
                                    :password=>ENV["SF_PASSWORD"],
                                    :api_version=>SF_API_VERSION,
                                    :host=>host
+    self.class.base_uri restforce.instance_url
+    @session_id = restforce.options[:oauth_token]
   end
 
   def sobject_list
@@ -53,6 +57,20 @@ class Salesforce
     classes = classes.join(",")
     syncTestUrl = "/services/data/v#{SF_API_VERSION}/tooling/runTestsSynchronous/?classnames=#{classes}"
     Salesforce.instance.restforce.get( syncTestUrl )
+  end
+
+  def sf_get_callout( url, options={} )
+    session_id = @session_id
+    self.class.get url, :headers=>{
+      "Authorization"=>"Bearer #{session_id}",
+      "Content-Type"=>"application/json"
+    }
+  end
+
+  def run_tests_asynchronously( class_ids )
+    classes = if classes.class == Array then classes else [class_ids] end
+    classes = classes.join(",")
+    Salesforce.instance.sf_get_callout "/services/data/v#{SF_API_VERSION}/tooling/runTestsAsynchronous/?classids=#{classes}"
   end
 
   private

@@ -2,6 +2,7 @@ require 'yaml'
 require_relative 'salesforce'
 require_relative 'apexbase'
 require_relative 'apextestresults'
+require_relative 'salesforce_job'
 
 class ApexClass
   include ApexBase
@@ -65,8 +66,34 @@ class ApexClass
   end
 
   def run_test
-    puts "Running a test...For class \"#{name}\""
-    results = Salesforce.instance.run_tests_synchronously name
+    puts "Running the tests...For class \"#{name}\""
+    if !@id
+      cls = get_class_sf_instance
+      @id = cls.current_page[0]["Id"]
+      begin
+        job = SalesforceJob.run_tests_asynchronously @id
+        status = "Processing"
+        escape_status = ["Aborted", "Completed", "Failed"]
+        puts "Monitoring Job: #{@id}"
+        while !escape_status.include?status
+          sleep(5)
+          monitoring_status = job.monitor.body.current_page[0]
+          status = monitoring_status.Status
+          puts "Status: #{status}"
+        end
+        puts "Keep this !#{monitoring_status.ParentJobId}'"
+        results = Salesforce.instance.metadata_query( "Select MethodName,Outcome,StackTrace,TestTimestamp,Message from ApexTestResult where AsyncApexJobId='#{monitoring_status.ParentJobId}'" )
+      rescue Exception=>e
+        puts "the job is already running"
+      end
+    end
+=begin
+    begin
+      results = Salesforce.instance.run_tests_synchronously name
+    rescue Faraday::TimeoutError
+      byebug
+    end
+=end
     @test_results = ApexTestResults.new results
   end
 

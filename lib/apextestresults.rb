@@ -1,20 +1,25 @@
 class ApexTestResults
-  attr_reader :successes, :failures, :total_time
+  attr_reader :successes, :failures, :total_time, :others
 
-  def initialize( sync_results )
-    if( sync_results.class == Faraday::Response )
-      total_time = sync_results.body["totalTime"]
-      initialize_failures sync_results
-      initialize_successes sync_results
+  def initialize( results )
+    @others = []
+    if results.class == Faraday::Response
+      if results.body.class == Hash
+        total_time = results.body["totalTime"]
+        initialize_failures results
+        initialize_successes results
+      else
+        parse_asynch results
+      end
     else
-      @successes = sync_results["successes"]
-      @failures = sync_results["failures"]
-      @total_time = sync_results["totalTime"]
+      @successes = results["successes"]
+      @failures = results["failures"]
+      @total_time = results["totalTime"]
     end
   end
 
   def num_tests_ran
-    successes.length + failures.length
+    successes.length + failures.length + others.length
   end
 
   private
@@ -42,5 +47,31 @@ class ApexTestResults
         }
         @successes.push res
       }
+    end
+
+    def parse_asynch async_results
+      @successes = []
+      @failures = []
+
+      async_results.body.each do |test_res|
+        method_name = test_res["MethodName"],
+        outcome = test_res["Outcome"]
+
+        if outcome == "Fail"
+          @failures.push({
+            "methodName"=>method_name,
+            "message"=>test_res["Message"],
+            "trace"=>test_res["StackTrace"]
+          })
+        elsif outcome == "Pass"
+          @successes.push({
+            "methodName"=>method_name
+          })
+        else
+          @others.push({
+            "data"=>test_res
+          })
+        end
+      end
     end
 end
