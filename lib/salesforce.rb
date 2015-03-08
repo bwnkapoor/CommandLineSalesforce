@@ -1,5 +1,4 @@
 require 'restforce'
-require 'salesforce_bulk'
 require 'byebug'
 require 'singleton'
 
@@ -16,13 +15,12 @@ class Salesforce
                                    :api_version=>SF_API_VERSION,
                                    :host=>host
 
-    @sf = Restforce.tooling :client_secret=>ENV["SF_CLIENT_SECRET"],
+    @sf = Restforce.new :client_secret=>ENV["SF_CLIENT_SECRET"],
                                    :client_id=>"3MVG9fMtCkV6eLhcHZKdKpiBaGRD.nn9APDZwScPrrS1WNk0n7FZxiid9uUSJil3fxRC_jFE1Fk_McVoXI9uu",
                                    :username=>ENV["SF_USERNAME"],
                                    :password=>ENV["SF_PASSWORD"],
                                    :api_version=>SF_API_VERSION,
                                    :host=>host
-    @bulk = SalesforceBulk::Api.new( ENV["SF_USERNAME"], ENV["SF_PASSWORD"], false )
   end
 
   def sobject_list

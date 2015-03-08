@@ -39,46 +39,6 @@ task :force, [:client, :environment] do |t, args|
 end
 
 task :play, [:file_name] do |t, args|
-  store_environment_login
-  #records_to_delete = Array.new
-  #records_to_delete.push( Hash[{"id"=>"01p17000000DNfyAAG"}] )
-  x = Salesforce.instance.restforce.destroy( "ApexClass", "01pG0000004sytgIAA" )
-=begin
-  records_to_delete = []
-  to_delete = {"Id"=>"01pj0000003DYg4AAG"}
-  records_to_delete.push( to_delete )
-  x = Salesforce.instance.bulk.delete( "ApexClass", records_to_delete, true )
-=end
-  byebug
-  puts "Hello"
-end
-
-task :compile_find_dependencies, [:file_name] do |t, args|
-  store_environment_login
-=begin
-  file_name = args[:file_name]
-  puts "Reading package.xml"
-  classes = find_members_of_type_in_package 'ApexClass'
-  classes = ApexClass.dependencies classes
-  File.open('test.yml', 'w') {|f| f.write classes.to_yaml }
-=end
-  data = YAML.load_file 'test.yml'
-  puts data.keys.length
-  name_to_dependencies = remove_non_keys( data )
-  cyclical = findStrongTies(name_to_dependencies)
-
-  puts "The following items have Cyclical Dependencies #{cyclical}"
-
-  puts "We have cyclical: #{cyclical.length}"
-
-  name_to_dependencies = non_cyclical( name_to_dependencies )
-  byebug
-  to_sort = remove_non_keys( name_to_dependencies )
-  byebug
-  our_sort = to_sort.tsort
-  puts "We can remove: #{our_sort.length} items here is the order\n"
-  puts our_sort
-
 end
 
 task :pull, [:file_names] do |t, args|
