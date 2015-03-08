@@ -45,7 +45,14 @@ class Salesforce
   end
 
   def metadata_query( str_query )
-    @restforce.get "/services/data/v#{SF_API_VERSION}/tooling/query/?q=#{str_query}"
+    @restforce.get( "/services/data/v#{SF_API_VERSION}/tooling/query/?q=#{str_query}" )
+  end
+
+  def run_tests_synchronously( classes )
+    classes = if classes.class == Array then classes else [classes] end
+    classes = classes.join(",")
+    syncTestUrl = "/services/data/v#{SF_API_VERSION}/tooling/runTestsSynchronous/?classnames=#{classes}"
+    Salesforce.instance.restforce.get( syncTestUrl )
   end
 
   private
