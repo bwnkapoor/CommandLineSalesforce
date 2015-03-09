@@ -98,10 +98,8 @@ class ApexClass
       results = Salesforce.instance.run_tests_synchronously name
       @test_results = ApexTestResults.new results
     rescue Faraday::TimeoutError
-      byebug
       puts "timeout"
     end
-
   end
 
   def self.only_test_classes all_classes

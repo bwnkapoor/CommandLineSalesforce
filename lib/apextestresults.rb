@@ -18,6 +18,10 @@ class ApexTestResults
     end
   end
 
+  def failures?
+    failures.length > 0
+  end
+
   def num_tests_ran
     successes.length + failures.length + others.length
   end

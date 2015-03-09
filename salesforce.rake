@@ -38,6 +38,26 @@ task :force, [:client, :environment] do |t, args|
   system cmd
 end
 
+task :run_test, [:file_name, :sync] do |t, args|
+  store_environment_login
+  test_file = args[:file_name]
+  cls = ApexClass.new( {Name: test_file } )
+  if args[:sync]
+    cls.run_test
+    puts "Success Rate: #{cls.test_results.successes.length}/#{cls.test_results.num_tests_ran}"
+    if cls.test_results.failures?
+      cls.test_results.failures.each do |fail|
+        puts "MethodName: #{fail['methodName']}"
+        puts "Message: #{fail['message']}"
+        puts "StackTrace: #{fail['stackTrace']}"
+        puts "-----------------------"
+      end
+    end
+  else
+    cls.run_test_async
+  end
+end
+
 task :play, [:file_name] do |t, args|
   store_environment_login
   #find_classes_unaccounted_for
@@ -50,10 +70,8 @@ task :play, [:file_name] do |t, args|
     missing_classes.push cls
   }
 =end
-  puts "unaccounted for classes #{missing_classes}"
-  puts "#{test_classes.length}/#{classes.length} were tests"
-
-  #byebug
+  #puts "unaccounted for classes #{missing_classes}"
+  #puts "#{test_classes.length}/#{classes.length} were tests"
   puts "have a nice day"
 end
 

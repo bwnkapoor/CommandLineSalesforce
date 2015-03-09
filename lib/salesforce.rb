@@ -56,15 +56,16 @@ class Salesforce
     classes = if classes.class == Array then classes else [classes] end
     classes = classes.join(",")
     syncTestUrl = "/services/data/v#{SF_API_VERSION}/tooling/runTestsSynchronous/?classnames=#{classes}"
-    Salesforce.instance.restforce.get( syncTestUrl )
+    sf_get_callout( syncTestUrl, {:timeout=>300} )
   end
 
   def sf_get_callout( url, options={} )
     session_id = @session_id
-    self.class.get url, :headers=>{
+    options[:headers]={
       "Authorization"=>"Bearer #{session_id}",
       "Content-Type"=>"application/json"
     }
+    self.class.get url, options
   end
 
   def run_tests_asynchronously( class_ids )
