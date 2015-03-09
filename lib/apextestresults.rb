@@ -61,11 +61,13 @@ class ApexTestResults
           @failures.push({
             "methodName"=>method_name,
             "message"=>test_res["Message"],
-            "trace"=>test_res["StackTrace"]
+            "trace"=>test_res["StackTrace"],
+            "logid"=>test_res["ApexLogId"]
           })
         elsif outcome == "Pass"
           @successes.push({
-            "methodName"=>method_name
+            "methodName"=>method_name,
+            "logid"=>test_res["ApexLogId"]
           })
         else
           @others.push({
