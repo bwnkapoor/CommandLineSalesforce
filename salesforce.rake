@@ -58,21 +58,20 @@ task :run_test, [:file_name, :sync] do |t, args|
   end
 end
 
-task :play, [:file_name] do |t, args|
+task :run_all_tests do
   store_environment_login
-  #find_classes_unaccounted_for
-  cls = ApexClass.new( {Name: 'cc_util_test_CloudCraze' } )
-  cls.run_test
-=begin
-  missing_classes.each { |cls_name|
-    cls = ApexClass.new( {Name: cls_name} )
+  all_apex_classes = Salesforce.instance.query( "Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
+  results = []
+  all_apex_classes.each_with_index do |cls_name, i|
+    puts "Running #{cls_name}"
+    cls = ApexClass.new( Name: cls_name )
     cls.run_test
-    missing_classes.push cls
-  }
-=end
-  #puts "unaccounted for classes #{missing_classes}"
-  #puts "#{test_classes.length}/#{classes.length} were tests"
-  puts "have a nice day"
+    res = cls.test_results.to_hash
+    res['class'] = cls_name
+    results.push res
+    puts "#{i+1}/#{all_apex_classes.length} tests have ran"
+  end
+  File.open("test_results.yaml", 'w') { |f| YAML.dump(results, f) }
 end
 
 task :pull, [:file_names] do |t, args|
@@ -213,6 +212,7 @@ def find_classes_unaccounted_for
   all_apex_classes.each_index { |i| all_apex_classes[i] = all_apex_classes[i].upcase }
   classes = ApexClass.load_from_test_coverage
   accounted_for_classes = classes.map(&:name)
+  byebug
   accounted_for_classes.each_index { |i| accounted_for_classes[i] = accounted_for_classes[i].upcase }
   missing_classes = all_apex_classes.select{ |class_name|
     !accounted_for_classes.include?(class_name)
