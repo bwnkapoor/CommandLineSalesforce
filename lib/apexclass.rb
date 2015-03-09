@@ -40,18 +40,25 @@ class ApexClass
   def pull
     file_request = get_class_sf_instance
     cls = file_request.current_page[0]
-    @body = cls.Body
-    @id = cls.Id
+    if cls
+      @body = cls.Body
+      @id = cls.Id
+    else
+      raise "Class DNE #{self.name}"
+    end
   end
 
   def self.pull fileNames
     classes = []
     fileNames.each do |file|
       cls = ApexClass.new( {Name: file} )
-      cls.pull
-      classes.push cls
+      begin
+        cls.pull
+        classes.push cls
+      rescue Exception=>e
+        puts e.to_s
+      end
     end
-
     classes
   end
 
@@ -108,8 +115,8 @@ class ApexClass
 
   def self.load_from_test_coverage
     classes = []
-    data = YAML.load_file "/home/justin/Desktop/Loreal/Test_Results2.yml"
-    data["items"].each do |result|
+    data = YAML.load_file "./test_results.yaml"
+    data.each do |result|
       name = result.delete("class")
       test_results = ApexTestResults.new result
       cls = ApexClass.new( { Name: name, TestResults: test_results} )

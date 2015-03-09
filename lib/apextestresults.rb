@@ -19,7 +19,7 @@ class ApexTestResults
   end
 
   def failures?
-    failures.length > 0
+    failures && failures.length > 0
   end
 
   def num_tests_ran
@@ -40,7 +40,7 @@ class ApexTestResults
           'methodName'=>failure["methodName"],
           'seeAllData'=>failure["seeAllData"],
           'time'=>failure["time"],
-          'trace'=>failure["stackTrace"],
+          'stackTrace'=>failure["stackTrace"],
           'message'=>failure["message"]
         }
         @failures.push res
@@ -71,7 +71,7 @@ class ApexTestResults
           @failures.push({
             "methodName"=>method_name,
             "message"=>test_res["Message"],
-            "trace"=>test_res["StackTrace"],
+            "stackTrace"=>test_res["StackTrace"],
             "logid"=>test_res["ApexLogId"]
           })
         elsif outcome == "Pass"

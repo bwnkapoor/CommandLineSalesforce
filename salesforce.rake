@@ -6,6 +6,26 @@ require_relative 'lib/readpackagexml'
 
 @logins_path = '/home/justin/buildTool/build_tool.yaml'
 
+task :play do
+  classes = ApexClass.load_from_test_coverage
+  puts "Classes Ran: #{classes.length}"
+  classes.each do |cls|
+    if cls.test_results.failures?
+      puts "Failing Class: #{cls.name}\n\n"
+      cls.test_results.failures.each do |fail|
+        puts "MethodName: #{fail['methodName']}"
+        puts "Trace: #{fail['stackTrace']}"
+        puts "Message: #{fail['message']}\n\n"
+        log_id = fail['logid']
+        if log_id
+          puts "LogId: #{log_id}"
+        end
+      end
+      puts "------------------------------------------------------------------------------------------------------------------------------------------"
+    end
+  end
+end
+
 task :save, [:file_paths] do |t, args|
   store_environment_login
   to_save = args[:file_paths]

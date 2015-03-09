@@ -32,7 +32,7 @@ end
 
 def readPackageXML
   all_members = []
-  readPackage.each do |member|
+  readPackage.each do |clsMember|
     all_members.concat( clsMember.with_extensions )
   end
   all_members
