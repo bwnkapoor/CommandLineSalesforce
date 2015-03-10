@@ -1,6 +1,7 @@
 require 'yaml'
 require_relative 'salesforce'
 require_relative 'apexbase'
+require 'byebug'
 require_relative 'apextestresults'
 require_relative 'salesforce_job'
 
@@ -24,14 +25,17 @@ class ApexClass
     folder.to_s + "/" + name.to_s + file_ext.to_s
   end
 
+  # Dependencies currently are not supporting extends, implements and variables of the class
   def self.get_dependencies class_name
     dependencies = []
-    x = Salesforce.instance.metadata_query("Select SymbolTable, FullName from ApexClassMember where FullName = \'#{class_name}\' order by createddate desc limit 1")
+    x = Salesforce.instance.metadata_query( "Select SymbolTable, MetaData, FullName from ApexClassMember where FullName = \'#{class_name}\' order by createddate desc limit 1" )
     x.body.current_page.each do |classMember|
       if classMember.SymbolTable
         classMember.SymbolTable.externalReferences.each do |xRef|
           dependencies.push xRef.name.to_s
         end
+      else
+        raise "No table exists! #{classMember}"
       end
     end
     puts "Dependencies for #{class_name}\n#{dependencies}"
@@ -65,12 +69,17 @@ class ApexClass
 
   def self.dependencies class_names
     name_to_dependencies = {}
+    not_defined = []
     class_names = if class_names.class == Array then class_names else [class_names] end
     class_names.each do |cls_name|
-      name_to_dependencies[cls_name] = ApexClass.get_dependencies cls_name
+      begin
+        name_to_dependencies[cls_name] = ApexClass.get_dependencies cls_name
+      rescue Exception=>e
+        not_defined.push cls_name
+      end
     end
 
-    name_to_dependencies
+    {dependencies: name_to_dependencies, symbol_tables_not_defined: not_defined}
   end
 
   def run_test_async

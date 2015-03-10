@@ -7,6 +7,7 @@ require_relative 'lib/apexclass'
 require_relative 'lib/apexpage'
 require_relative 'lib/apexcomponent'
 require_relative 'lib/apexstaticresource'
+require_relative 'lib/apextrigger'
 
 def write files
   files.each do |sf_file|
@@ -41,6 +42,8 @@ def apex_member_factory(type)
     ApexPage
   elsif( type == ".component" )
     ApexComponent
+  elsif( type == ".trigger" )
+    ApexTrigger
   else
     puts "Not Supported Type #{type}"
     nil
@@ -56,6 +59,7 @@ def push files_paths_to_save
     type = File.extname( to_save_path )
     file_name = File.basename to_save_path, File.extname(to_save_path)
     type = apex_member_factory( type )
+
     if( type )
       cls = type.new()
       cls.load_from_local_file(to_save_path)

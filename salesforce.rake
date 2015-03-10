@@ -6,7 +6,7 @@ require_relative 'lib/readpackagexml'
 
 @logins_path = '/home/justin/buildTool/build_tool.yaml'
 
-task :play do
+task :output_test_results do
   classes = ApexClass.load_from_test_coverage
   puts "Classes Ran: #{classes.length}"
   classes.each do |cls|
@@ -28,11 +28,69 @@ end
 
 # cannot delete some components...
 task :lazy do
-  undeletable = ["cc_ctrl_JQueryInclude","cc_ctrl_Footer","cc_ctrl_SiteLogin","cc_ctrl_Schema","cc_ctrl_HomePage","cc_ctrl_ShippingAndHandling","cc_ctrl_mediaTab","cc_ctrl_OrderExportLaunch","cc_ctrl_ProductDetail","cc_ctrl_SiteRegister","cc_ctrl_promotionExtension","cc_ctrl_CheckOut","cc_ctrl_Coupon","cc_ctrl_BreadCrumb","cc_extn_ProductCatalog","cc_ctrl_PriceList","cc_hlpr_CyberSourceHOP","cc_ctrl_documentTab","cc_ctrl_GetSession","cc_ctrl_GuidedSellingProfile","cc_ctrl_ChangePassword","cc_extn_HomePage","cc_ctrl_SendEmail","cc_ctrl_WishList","cc_extn_cart","cc_extn_PaymentShippingInfo","cc_ctrl_InitData","cc_ctrl_MyProfile","cc_ctrl_ProductList","cc_ctrl_PriceListItemTiers","cc_ctrl_ForgotPassword","cc_ctrl_HTMLHead","cc_ctrl_Cart","cc_ctrl_QuickOrder","cc_util_Order","cc_ctrl_MyOrderList","cc_ctrl_IEIncludes","cc_ctrl_ProductListDisplayWidget","cc_ctrl_RecentlyVisited","cc_ctrl_Formatter","cc_ctrl_AdminApproveOrder","cc_ctrl_MyAccount","cc_ctrl_RichText","cc_ctrl_CartList","cc_ctrl_PriceListExtension","cc_ctrl_promotion","cc_ctrl_OrderExport","cc_ctrl_CyberSourceReceipt","cc_bean_ProductForm","cc_bean_MockContactAddress","cc_ctrl_FeaturedProducts","cc_ctrl_MenuBar","cc_ctrl_Content","cc_ctrl_RelatedItems","cc_bean_ProductListViewData","cc_extn_UserInfo","cc_ctrl_CyberSourceHOP","cc_ctrl_CCPayPalJump","cc_ctrl_Admin","cc_ctrl_SpecificationsTab","cc_ctrl_CheckoutYourInformation","cc_ctrl_CloudCraze","cc_ctrl_AddToCart","cc_ctrl_LocaleExtension","cc_bean_test_ProductForm","cc_bean_test_SelectableProduct","cc_util_NameComparator","cc_util_PriceComparator","cc_util_ProductDateComparator","cc_bean_test_MockContactAddress","cc_ctrl_test_Coupon","cc_ctrl_test_CyberSourceHOP","cc_ctrl_test_CyberSourceReceipt","cc_ctrl_test_FeaturedProducts","cc_ctrl_test_Footer","cc_ctrl_test_ForgotPassword","cc_ctrl_test_Formatter","cc_ctrl_test_GetSession","cc_ctrl_test_GuidedSellingProfile","cc_test_ExtensionBase","cc_util_test_Order"]
-  all = load_from_dependencies
-  puts all.to_s
-  y = all.keys
-  puts y - undeletable
+  to_delete = find_members_of_type_in_package "ApexClass"
+  known_cannot_delete = ["cc_ctrl_JQueryInclude",
+  "cc_ctrl_Footer",
+  "cc_ctrl_Schema",
+  "cc_ctrl_SiteLogin",
+  "cc_ctrl_HomePage",
+  "cc_ctrl_ShippingAndHandling",
+  "cc_ctrl_mediaTab",
+  "cc_ctrl_CheckOut",
+  "cc_ctrl_ProductDetail",
+  "cc_ctrl_promotionExtension",
+  "cc_ctrl_Coupon",
+  "cc_ctrl_BreadCrumb",
+  "cc_extn_ProductCatalog",
+  "cc_ctrl_PriceList",
+  "cc_hlpr_CyberSourceHOP",
+  "cc_ctrl_documentTab",
+  "cc_ctrl_GetSession",
+  "cc_ctrl_GuidedSellingProfile",
+  "cc_ctrl_ChangePassword",
+  "cc_extn_HomePage",
+  "cc_ctrl_SendEmail",
+  "cc_ctrl_WishList",
+  "cc_extn_cart",
+  "cc_extn_PaymentShippingInfo",
+  "cc_ctrl_InitData",
+  "cc_ctrl_MyProfile",
+  "cc_ctrl_ProductList",
+  "cc_ctrl_PriceListItemTiers",
+  "cc_ctrl_HTMLHead",
+  "cc_ctrl_ProductListDisplayWidget",
+  "cc_ctrl_Cart",
+  "cc_ctrl_QuickOrder",
+  "cc_util_Order",
+  "cc_ctrl_MyOrderList",
+  "cc_ctrl_IEIncludes",
+  "cc_ctrl_RichText",
+  "cc_ctrl_CartList",
+  "cc_ctrl_PriceListExtension",
+  "cc_ctrl_promotion",
+  "cc_ctrl_RecentlyVisited",
+  "cc_ctrl_Formatter",
+  "cc_ctrl_Content",
+  "cc_ctrl_MenuBar",
+  "cc_ctrl_FeaturedProducts",
+  "cc_bean_ProductForm",
+  "cc_ctrl_CyberSourceReceipt",
+  "cc_ctrl_CCPayPalJump",
+  "cc_ctrl_CyberSourceHOP",
+  "cc_ctrl_SpecificationsTab",
+  "cc_ctrl_RelatedItems",
+  "cc_extn_UserInfo",
+  "cc_bean_ProductListViewData",
+  "cc_ctrl_Admin",
+  "cc_ctrl_CloudCraze",
+  "cc_ctrl_AddToCart",
+  "cc_ctrl_LocaleExtension",
+  "cc_ctrl_CheckoutYourInformation"]
+  cannot_delete = find_elements_cannot_delete to_delete, known_cannot_delete
+  x = to_delete - cannot_delete
+  x = x - known_cannot_delete
+  byebug
+  File.open('destruction.xml', 'w'){ |f| f.write "<members>" + x.join("</members>\n<members>") + "</members>" }
 end
 
 task :save, [:file_paths] do |t, args|
@@ -85,6 +143,14 @@ task :run_test, [:file_name, :sync] do |t, args|
   else
     cls.run_test_async
   end
+end
+
+task :log_dependencies do
+  store_environment_login
+  class_names = Salesforce.instance.query("Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
+  classes = ApexClass.dependencies class_names
+  File.open('dependencies.yaml', 'w') {|f| f.write classes[:dependencies].to_yaml }
+  File.open('not_defined.yaml', 'w') {|f| f.write classes[:symbol_tables_not_defined].to_yaml }
 end
 
 task :compile_all do
@@ -301,16 +367,32 @@ end
 
 def load_from_dependencies
   classes = {}
-  data = YAML.load_file "./apexclassdependencies.yaml"
+  data = YAML.load_file "./dependencies.yaml"
   data.each_key do |cls_name|
     classes[cls_name] = data[cls_name]
-=begin
-    name = result.delete("class")
-    depends = []
-    cls = ApexClass.new( { Name: name, Dependencies: depends} )
-    classes.push cls
-=end
   end
-  #byebug
   classes
+end
+
+def find_elements_cannot_delete attempt_to_delete, known_cannot_delete=[]
+  all = load_from_dependencies
+  list_to_delete = attempt_to_delete
+  puts "Size: #{list_to_delete.length}"
+  list_to_delete = list_to_delete - known_cannot_delete
+  puts "Size: #{list_to_delete.length}"
+  cannot_delete = []
+  all.each_key do |org_class|
+    classes_to_stay_due_to_dependencies = all[org_class] & list_to_delete
+    if( ( classes_to_stay_due_to_dependencies ).length > 0 && !list_to_delete.include?(org_class) )
+      cannot_delete.concat classes_to_stay_due_to_dependencies
+    end
+  end
+
+  cannot_delete.uniq!
+  if( !cannot_delete.empty? )
+    puts "how many times?" + cannot_delete.length.to_s
+    cannot_delete.concat find_elements_cannot_delete (attempt_to_delete-cannot_delete), cannot_delete
+  end
+
+  cannot_delete
 end
