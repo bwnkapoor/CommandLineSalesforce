@@ -26,6 +26,15 @@ task :play do
   end
 end
 
+# cannot delete some components...
+task :lazy do
+  undeletable = ["cc_ctrl_JQueryInclude","cc_ctrl_Footer","cc_ctrl_SiteLogin","cc_ctrl_Schema","cc_ctrl_HomePage","cc_ctrl_ShippingAndHandling","cc_ctrl_mediaTab","cc_ctrl_OrderExportLaunch","cc_ctrl_ProductDetail","cc_ctrl_SiteRegister","cc_ctrl_promotionExtension","cc_ctrl_CheckOut","cc_ctrl_Coupon","cc_ctrl_BreadCrumb","cc_extn_ProductCatalog","cc_ctrl_PriceList","cc_hlpr_CyberSourceHOP","cc_ctrl_documentTab","cc_ctrl_GetSession","cc_ctrl_GuidedSellingProfile","cc_ctrl_ChangePassword","cc_extn_HomePage","cc_ctrl_SendEmail","cc_ctrl_WishList","cc_extn_cart","cc_extn_PaymentShippingInfo","cc_ctrl_InitData","cc_ctrl_MyProfile","cc_ctrl_ProductList","cc_ctrl_PriceListItemTiers","cc_ctrl_ForgotPassword","cc_ctrl_HTMLHead","cc_ctrl_Cart","cc_ctrl_QuickOrder","cc_util_Order","cc_ctrl_MyOrderList","cc_ctrl_IEIncludes","cc_ctrl_ProductListDisplayWidget","cc_ctrl_RecentlyVisited","cc_ctrl_Formatter","cc_ctrl_AdminApproveOrder","cc_ctrl_MyAccount","cc_ctrl_RichText","cc_ctrl_CartList","cc_ctrl_PriceListExtension","cc_ctrl_promotion","cc_ctrl_OrderExport","cc_ctrl_CyberSourceReceipt","cc_bean_ProductForm","cc_bean_MockContactAddress","cc_ctrl_FeaturedProducts","cc_ctrl_MenuBar","cc_ctrl_Content","cc_ctrl_RelatedItems","cc_bean_ProductListViewData","cc_extn_UserInfo","cc_ctrl_CyberSourceHOP","cc_ctrl_CCPayPalJump","cc_ctrl_Admin","cc_ctrl_SpecificationsTab","cc_ctrl_CheckoutYourInformation","cc_ctrl_CloudCraze","cc_ctrl_AddToCart","cc_ctrl_LocaleExtension","cc_bean_test_ProductForm","cc_bean_test_SelectableProduct","cc_util_NameComparator","cc_util_PriceComparator","cc_util_ProductDateComparator","cc_bean_test_MockContactAddress","cc_ctrl_test_Coupon","cc_ctrl_test_CyberSourceHOP","cc_ctrl_test_CyberSourceReceipt","cc_ctrl_test_FeaturedProducts","cc_ctrl_test_Footer","cc_ctrl_test_ForgotPassword","cc_ctrl_test_Formatter","cc_ctrl_test_GetSession","cc_ctrl_test_GuidedSellingProfile","cc_test_ExtensionBase","cc_util_test_Order"]
+  all = load_from_dependencies
+  puts all.to_s
+  y = all.keys
+  puts y - undeletable
+end
+
 task :save, [:file_paths] do |t, args|
   store_environment_login
   to_save = args[:file_paths]
@@ -75,6 +84,55 @@ task :run_test, [:file_name, :sync] do |t, args|
     end
   else
     cls.run_test_async
+  end
+end
+
+task :compile_all do
+  store_environment_login
+
+  classes = Salesforce.instance.query( "Select Id,Name,Body from ApexClass where NamespacePrefix=null")
+  chunking_size = 20
+  classes.each_slice( chunking_size ).to_a.each_with_index do |chunk, i|
+    container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
+    puts "saving the container"
+    container.save()
+
+    chunk.each_with_index do |cls, i|
+      puts "Saving... #{cls.Name}"
+      cls = ApexClass.new( cls )
+      cls.save container
+    end
+
+    asynch = ContainerAsyncRequest.new( container.id )
+    deploy_id = asynch.save
+    results = nil
+    while !results || (results.State != 'Completed' && results.State != 'Failed')
+      puts "sleeping"
+      sleep(1)
+      results = Salesforce.instance.metadata_query "Select DeployDetails, State from ContainerAsyncRequest where id = \'#{deploy_id}\'"
+      results = results.body.current_page[0]
+    end
+
+    has_errors = false
+    results.DeployDetails.allComponentMessages.each do |message|
+      fileName = message.fileName.to_s
+      if message.success then puts "Success" else puts "Oh No!" end
+      if !message.success
+        has_errors = true
+        puts message.problem.to_s
+        puts message.lineNumber.to_s
+        puts message.problemType.to_s
+        #puts saving_classes[fileName].local_name
+      end
+    end
+
+    if !has_errors
+      puts "Saved"
+    else
+      puts "Failed to save #{container.id}"
+    end
+
+    puts "Compiled #{i+1}/#{chunking_size}"
   end
 end
 
@@ -238,4 +296,21 @@ def find_classes_unaccounted_for
     !accounted_for_classes.include?(class_name)
   }
   missing_classes
+end
+
+
+def load_from_dependencies
+  classes = {}
+  data = YAML.load_file "./apexclassdependencies.yaml"
+  data.each_key do |cls_name|
+    classes[cls_name] = data[cls_name]
+=begin
+    name = result.delete("class")
+    depends = []
+    cls = ApexClass.new( { Name: name, Dependencies: depends} )
+    classes.push cls
+=end
+  end
+  #byebug
+  classes
 end

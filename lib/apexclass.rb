@@ -14,6 +14,7 @@ class ApexClass
 
   def initialize(options={})
     @body = options[:Body]
+    @id = options[:Id]
     @test_results = options[:TestResults]
     @folder = 'classes'
     @name = options[:Name]
@@ -134,7 +135,7 @@ class ApexClass
   end
 
   def get_class_sf_instance( searching_name=name )
-    Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexClass+where+name=\'#{searching_name}\'")
+    Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexClass+where+name=\'#{searching_name}\' and NamespacePrefix=null")
   end
 
   def test_cls?

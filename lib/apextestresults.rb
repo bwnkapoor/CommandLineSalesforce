@@ -23,7 +23,10 @@ class ApexTestResults
   end
 
   def num_tests_ran
-    successes.length + failures.length + others.length
+    success_len = successes ? successes.length : 0
+    fail_len = failures ? failures.length : 0
+    others_len = others ? others.length : 0
+    success_len + fail_len + others_len
   end
 
   def to_hash
