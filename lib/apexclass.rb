@@ -21,6 +21,17 @@ class ApexClass
     @name = options[:Name]
   end
 
+  def extends
+    if !@body
+      @body = get_class_sf_instance.current_page[0].Body
+    end
+    matches = @body.match Regexp.new( "[public|private][ ]+class[ ]+[A-Za-z0-9_]+[ ]+extends[ ]+([A-Za-z0-9_.]+)", true )
+
+    if( matches )
+      return matches.captures[0]
+    end
+  end
+
   def path
     folder.to_s + "/" + name.to_s + file_ext.to_s
   end
@@ -33,6 +44,11 @@ class ApexClass
       if classMember.SymbolTable
         classMember.SymbolTable.externalReferences.each do |xRef|
           dependencies.push xRef.name.to_s
+        end
+        cls = ApexClass.new( {Name: class_name} )
+        ext = cls.extends
+        if ext
+          dependencies.push ext
         end
       else
         raise "No table exists! #{classMember}"
@@ -143,7 +159,7 @@ class ApexClass
     puts cls_member_id
   end
 
-  def get_class_sf_instance( searching_name=name )
+  def get_class_sf_instance( searching_name=@name )
     Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexClass+where+name=\'#{searching_name}\' and NamespacePrefix=null")
   end
 

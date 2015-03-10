@@ -26,6 +26,12 @@ task :output_test_results do
   end
 end
 
+task :play do
+  store_environment_login
+  cls = ApexClass.new( {Name: 'SendEmailWithSF_Attachments'} )
+  ext = cls.extends
+end
+
 # cannot delete some components...
 task :lazy do
   to_delete = find_members_of_type_in_package "ApexClass"
@@ -131,17 +137,22 @@ task :run_test, [:file_name, :sync] do |t, args|
   cls = ApexClass.new( {Name: test_file } )
   if args[:sync]
     cls.run_test
-    puts "Success Rate: #{cls.test_results.successes.length}/#{cls.test_results.num_tests_ran}"
-    if cls.test_results.failures?
-      cls.test_results.failures.each do |fail|
-        puts "MethodName: #{fail['methodName']}"
-        puts "Message: #{fail['message']}"
-        puts "StackTrace: #{fail['stackTrace']}"
-        puts "-----------------------"
-      end
-    end
   else
     cls.run_test_async
+  end
+
+  if( cls.test_results )
+    puts "Success Rate: #{cls.test_results.successes.length}/#{cls.test_results.num_tests_ran}"
+    cls.test_results.failures.each do |fail|
+      puts "MethodName: #{fail['methodName']}"
+      puts "Message: #{fail['message']}"
+      puts "StackTrace: #{fail['stackTrace']}"
+      log_id = fail['logid']
+      if( log_id )
+        puts "LogId: #{log_id}"
+      end
+      puts "-----------------------"
+    end
   end
 end
 
