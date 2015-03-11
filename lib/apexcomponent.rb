@@ -1,8 +1,10 @@
 require_relative 'salesforce'
 require_relative 'apexbase'
+require_relative 'apexmarkup'
 
 class ApexComponent
   include ApexBase
+  include ApexMarkup
 
   attr_reader :body, :name, :folder, :id, :local_name
 
@@ -12,6 +14,23 @@ class ApexComponent
 
   def path
     folder.to_s + "/" + name.to_s + file_ext.to_s
+  end
+
+  def body
+    if !@body
+      pull
+    end
+    @body
+  end
+
+  def attributes
+    doc = Nokogiri::HTML body
+    apex_attributes = doc.css "attribute"
+    attrs = []
+    if apex_attributes && !apex_attributes.empty?
+      apex_attributes.each{ |attr| attrs.push attr["type"] }
+    end
+    attrs
   end
 
   def initialize(options={})

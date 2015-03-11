@@ -1,43 +1,22 @@
 require_relative 'salesforce'
 require_relative 'apexbase'
-require 'nokogiri'
+require_relative 'apexmarkup'
+
 
 class ApexPage
   include ApexBase
-  attr_reader :body, :name, :folder, :id, :local_name
+  include ApexMarkup
+  attr_reader :name, :folder, :id, :local_name
 
   def file_ext
     return '.page'
   end
 
-  def controller
+  def body
     if !@body
       pull
     end
-    doc = Nokogiri::HTML @body
-    apex_page = doc.css "page"
-    if apex_page && !apex_page.empty?
-      apex_page = apex_page[0]
-      ctrl_attr = apex_page.attributes["controller"]
-      if ctrl_attr
-        ctrl_attr.value
-      end
-    end
-  end
-
-  def extensions
-    if !@body
-      pull
-    end
-    doc = Nokogiri::HTML @body
-    apex_page = doc.css "page"
-    if apex_page && !apex_page.empty?
-      apex_page = apex_page[0]
-      ctrl_attr = apex_page.attributes["extensions"]
-      if ctrl_attr
-        ctrl_attr.value.split ","
-      end
-    end
+    @body
   end
 
   def initialize(options={})
