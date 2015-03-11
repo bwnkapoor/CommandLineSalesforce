@@ -25,7 +25,7 @@ class ApexClass
     if !@body
       @body = get_class_sf_instance.current_page[0].Body
     end
-    matches = @body.match Regexp.new( "[public|private][ ]+class[ ]+[A-Za-z0-9_]+[ ]+extends[ ]+([A-Za-z0-9_.]+)", true )
+    matches = @body.match Regexp.new( "[global|public|private][ ]+[with|without sharing]{0,1}[ ]*class[ ]+[A-Za-z0-9_]+[ ]+extends[ ]+([A-Za-z0-9_.]+)", true )
 
     if( matches )
       return matches.captures[0]

@@ -1,5 +1,6 @@
 require_relative 'salesforce'
 require_relative 'apexbase'
+require 'nokogiri'
 
 class ApexPage
   include ApexBase
@@ -9,10 +10,40 @@ class ApexPage
     return '.page'
   end
 
+  def controller
+    if !@body
+      pull
+    end
+    doc = Nokogiri::HTML @body
+    apex_page = doc.css "page"
+    if apex_page && !apex_page.empty?
+      apex_page = apex_page[0]
+      ctrl_attr = apex_page.attributes["controller"]
+      if ctrl_attr
+        ctrl_attr.value
+      end
+    end
+  end
+
+  def extensions
+    if !@body
+      pull
+    end
+    doc = Nokogiri::HTML @body
+    apex_page = doc.css "page"
+    if apex_page && !apex_page.empty?
+      apex_page = apex_page[0]
+      ctrl_attr = apex_page.attributes["extensions"]
+      if ctrl_attr
+        ctrl_attr.value.split ","
+      end
+    end
+  end
+
   def initialize(options={})
     @body = options[:Markup]
-    @folder = 'pages'
     @name = options[:Name]
+    @folder = 'pages'
   end
 
   def path
@@ -38,7 +69,7 @@ class ApexPage
   end
 
   def get_class_sf_instance( searching_name=name )
-    Salesforce.instance.query("Select+Id,Name,Markup,SystemModstamp,NamespacePrefix+from+ApexPage+where+name=\'#{searching_name}\'")
+    Salesforce.instance.query("Select+Id,Name,Markup,SystemModstamp,NamespacePrefix+from+ApexPage+where+name=\'#{searching_name}\' and namespacePrefix=null")
   end
 
   def save( metadataContainer )
