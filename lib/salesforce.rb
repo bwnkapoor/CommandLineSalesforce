@@ -68,6 +68,24 @@ class Salesforce
     self.class.get url, options
   end
 
+  def sf_post_callout( url, options={} )
+    session_id = @session_id
+    options[:headers]={
+      "Authorization"=>"Bearer #{session_id}",
+      "Content-Type"=>"application/json"
+    }
+    self.class.post url, options
+  end
+
+  def sf_delete_callout( url, options={} )
+    session_id = @session_id
+    options[:headers]={
+      "Authorization"=>"Bearer #{session_id}",
+      "Content-Type"=>"application/json"
+    }
+    self.class.delete url, options
+  end
+
   def run_tests_asynchronously( class_ids )
     classes = if classes.class == Array then classes else [class_ids] end
     classes = classes.join(",")

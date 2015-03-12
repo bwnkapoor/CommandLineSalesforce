@@ -21,6 +21,10 @@ class ApexClass
     @name = options[:Name]
   end
 
+  def type
+    "ApexClass"
+  end
+
   def extends
     if !@body
       @body = get_class_sf_instance.current_page[0].Body
@@ -36,7 +40,7 @@ class ApexClass
     folder.to_s + "/" + name.to_s + file_ext.to_s
   end
 
-  # Dependencies currently are not supporting extends, implements and variables of the class
+  # Dependencies currently are not supporting implements and variables of the class
   def self.get_dependencies class_name
     dependencies = []
     x = Salesforce.instance.metadata_query( "Select SymbolTable, MetaData, FullName from ApexClassMember where FullName = \'#{class_name}\' order by createddate desc limit 1" )
@@ -152,11 +156,23 @@ class ApexClass
   end
 
   def save( metadataContainer )
-    cls_member_id = Salesforce.instance.restforce.create( "ApexClassMember", Body: body,
-                                                             MetadataContainerId: metadataContainer.id,
-                                                             ContentEntityId: id
-                                            )
-    puts cls_member_id
+    if id
+      cls_member_id = Salesforce.instance.restforce.create( "ApexClassMember", Body: body,
+                                                               MetadataContainerId: metadataContainer.id,
+                                                               ContentEntityId: id
+                                              )
+
+   else
+      cls_member_id = Salesforce.instance.sf_post_callout( "/services/data/v33.0/sobjects/ApexClass" , {
+
+                                                              body: {
+                                                                 "Name"=>name,
+                                                                 "Body"=>body
+                                                              }.to_json
+                                                           }
+                                              )
+   end
+   puts cls_member_id
   end
 
   def get_class_sf_instance( searching_name=@name )

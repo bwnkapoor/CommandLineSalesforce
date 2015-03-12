@@ -12,6 +12,14 @@ class ApexComponent
     return '.component'
   end
 
+  def container_tag
+    return "component"
+  end
+
+  def type
+    "ApexComponent"
+  end
+
   def path
     folder.to_s + "/" + name.to_s + file_ext.to_s
   end
@@ -31,6 +39,23 @@ class ApexComponent
       apex_attributes.each{ |attr| attrs.push attr["type"] }
     end
     attrs
+  end
+
+  def dependencies
+    depends = []
+    depends.push controller
+    depends.concat extensions
+    depends.concat attributes
+    depends
+  end
+
+  def self.dependencies page_names
+    pg_name_to_dependencies = {}
+    page_names.each do |pg_name|
+      pg = ApexComponent.new( {Name: pg_name} )
+      pg_name_to_dependencies[pg_name] = pg.dependencies
+    end
+    pg_name_to_dependencies
   end
 
   def initialize(options={})

@@ -3,7 +3,7 @@ require 'nokogiri'
 module ApexMarkup
   def controller
     doc = Nokogiri::HTML body
-    apex_page = doc.css "page"
+    apex_page = doc.css container_tag
     if apex_page && !apex_page.empty?
       apex_page = apex_page[0]
       ctrl_attr = apex_page.attributes["controller"]
@@ -22,6 +22,8 @@ module ApexMarkup
       if ctrl_attr
         ctrl_attr.value.split ","
       end
+    else
+      []
     end
   end
 end

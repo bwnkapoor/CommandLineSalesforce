@@ -2,7 +2,6 @@ require_relative 'salesforce'
 require_relative 'apexbase'
 require_relative 'apexmarkup'
 
-
 class ApexPage
   include ApexBase
   include ApexMarkup
@@ -10,6 +9,14 @@ class ApexPage
 
   def file_ext
     return '.page'
+  end
+
+  def container_tag
+    return "page"
+  end
+
+  def type
+    "ApexPage"
   end
 
   def body
@@ -23,6 +30,22 @@ class ApexPage
     @body = options[:Markup]
     @name = options[:Name]
     @folder = 'pages'
+  end
+
+  def dependencies
+    depends = []
+    depends.push controller
+    depends.concat extensions
+    depends
+  end
+
+  def self.dependencies page_names
+    pg_name_to_dependencies = {}
+    page_names.each do |pg_name|
+      pg = ApexPage.new( {Name: pg_name} )
+      pg_name_to_dependencies[pg_name] = pg.dependencies
+    end
+    pg_name_to_dependencies
   end
 
   def path
@@ -52,10 +75,22 @@ class ApexPage
   end
 
   def save( metadataContainer )
-    cls_member_id = Salesforce.instance.restforce.create( "ApexPageMember", Body: body,
-                                                             MetadataContainerId: metadataContainer.id,
-                                                             ContentEntityId: id
-                                            )
+    if id
+      cls_member_id = Salesforce.instance.restforce.create( "ApexPageMember", Body: body,
+                                                               MetadataContainerId: metadataContainer.id,
+                                                               ContentEntityId: id
+                                              )
+    else
+      cls_member_id = Salesforce.instance.sf_post_callout( "/services/data/v33.0/sobjects/ApexPage" , {
+
+                                                              body: {
+                                                                 "Name"=>name,
+                                                                 "Markup"=>body,
+                                                                 "MasterLabel"=>name
+                                                              }.to_json
+                                                           }
+                                              )
+    end
     puts cls_member_id
   end
 end

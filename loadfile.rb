@@ -35,7 +35,10 @@ def pull file_names
   puts "done"
 end
 
-def apex_member_factory(type)
+def apex_member_factory(file_name)
+  type = File.extname( file_name )
+  file_name = File.basename file_name, File.extname(file_name)
+
   if( type == ".cls" )
     ApexClass
   elsif( type == ".page" )
@@ -56,9 +59,7 @@ def push files_paths_to_save
   container.save()
   if files_paths_to_save.class != Array then files_paths_to_save = [files_paths_to_save] end
   files_paths_to_save.each do |to_save_path|
-    type = File.extname( to_save_path )
-    file_name = File.basename to_save_path, File.extname(to_save_path)
-    type = apex_member_factory( type )
+    type = apex_member_factory( to_save_path )
 
     if( type )
       cls = type.new()

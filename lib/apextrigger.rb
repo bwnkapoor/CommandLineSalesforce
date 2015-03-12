@@ -8,6 +8,17 @@ class ApexTrigger
     return '.trigger'
   end
 
+  def type
+    'ApexTrigger'
+  end
+
+  def table_enum_or_id
+    matches = @body.match Regexp.new "trigger[ ]+([A-Za-z0-9_]+)[ ]+on[ ]+([A-Za-z0-9_]+)", true
+    if matches
+      return matches.captures[1]
+    end
+  end
+
   def initialize(options={})
     @body = options[:Body]
     @id = options[:Id]
@@ -64,5 +75,26 @@ class ApexTrigger
 
   def get_class_sf_instance( searching_name=name )
     Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexTrigger+where+name=\'#{searching_name}\' and NamespacePrefix=null")
+  end
+
+  def save( metadataContainer )
+    if( id )
+      cls_member_id = Salesforce.instance.restforce.create( "ApexTriggerMember", Body: body,
+                                                               MetadataContainerId: metadataContainer.id,
+                                                               ContentEntityId: id
+                                              )
+    else
+      cls_member_id = Salesforce.instance.sf_post_callout( "/services/data/v33.0/sobjects/ApexTrigger" , {
+
+                                                              body: {
+                                                                 "Name"=>name,
+                                                                 "Body"=>body,
+                                                                 "TableEnumOrId"=>table_enum_or_id
+                                                              }.to_json
+                                                           }
+                                              )
+
+    end
+    puts cls_member_id
   end
 end
