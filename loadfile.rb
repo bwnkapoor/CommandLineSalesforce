@@ -62,7 +62,8 @@ def push files_paths_to_save
     type = apex_member_factory( to_save_path )
 
     if( type )
-      cls = type.new()
+      base_name = File.basename(to_save_path, File.extname(to_save_path))
+      cls = type.new({Name: base_name })
       cls.load_from_local_file(to_save_path)
       saving_classes = { cls.name=>cls }
       puts cls.save( container )

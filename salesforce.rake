@@ -35,6 +35,7 @@ end
 # cannot delete some components...
 task :lazy do
   to_delete = find_members_of_type_in_package "ApexClass"
+=begin
   known_cannot_delete = ["cc_ctrl_JQueryInclude",
   "cc_ctrl_Footer",
   "cc_ctrl_Schema",
@@ -92,11 +93,34 @@ task :lazy do
   "cc_ctrl_AddToCart",
   "cc_ctrl_LocaleExtension",
   "cc_ctrl_CheckoutYourInformation"]
-  cannot_delete = find_elements_cannot_delete to_delete, known_cannot_delete
+=end
+  cannot_delete = find_elements_cannot_delete to_delete, []#known_cannot_delete
   x = to_delete - cannot_delete
-  x = x - known_cannot_delete
-  byebug
-  File.open('destruction.xml', 'w'){ |f| f.write "<members>" + x.join("</members>\n<members>") + "</members>" }
+  #x = x - known_cannot_delete
+  File.open('destruction.xml', 'w'){ |f| f.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                                 "<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n" +
+                                                 "    <fullName>codepkg</fullName>\n" +
+                                                 "    <types>\n" +
+                                                 "        <members>" +
+                                                 x.join("</members>\n        <members>") +
+                                                 "</members>\n" +
+                                                 "        <name>ApexClass</name>\n" +
+                                                 "    </types>\n" +
+                                                 "    <version>33.0</version>\n" +
+                                                 "</Package>"
+                                    }
+
+end
+
+task :delete, [:file_path] do |t,args|
+  store_environment_login
+  file_name = args[:file_path]
+  member = apex_member_factory(file_name)
+  type = File.extname( file_name )
+  file_name = File.basename file_name, File.extname(file_name)
+  to_delete = member.new( {Name: file_name} )
+  res = to_delete.delete
+  puts res
 end
 
 task :save, [:file_paths] do |t, args|
@@ -158,9 +182,11 @@ end
 
 task :log_dependencies do
   store_environment_login
-  class_names = Salesforce.instance.query("Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
-  classes = ApexClass.dependencies class_names
-  File.open('dependencies.yaml', 'w') {|f| f.write classes[:dependencies].to_yaml }
+  pages = ApexPage.dependencies Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null").map(&:Name)
+  components = ApexComponent.dependencies Salesforce.instance.query("Select Name from ApexComponent where NamespacePrefix=null").map(&:Name)
+  classes = ApexClass.dependencies Salesforce.instance.query("Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
+  dependencies = {"components"=>components, "classes"=>classes[:dependencies], "pages"=>pages}
+  File.open('dependencies.yaml', 'w') {|f| f.write dependencies.to_yaml }
   File.open('not_defined.yaml', 'w') {|f| f.write classes[:symbol_tables_not_defined].to_yaml }
 end
 
@@ -367,7 +393,6 @@ def find_classes_unaccounted_for
   all_apex_classes.each_index { |i| all_apex_classes[i] = all_apex_classes[i].upcase }
   classes = ApexClass.load_from_test_coverage
   accounted_for_classes = classes.map(&:name)
-  byebug
   accounted_for_classes.each_index { |i| accounted_for_classes[i] = accounted_for_classes[i].upcase }
   missing_classes = all_apex_classes.select{ |class_name|
     !accounted_for_classes.include?(class_name)
@@ -375,26 +400,27 @@ def find_classes_unaccounted_for
   missing_classes
 end
 
-
-def load_from_dependencies
-  classes = {}
-  data = YAML.load_file "./dependencies.yaml"
-  data.each_key do |cls_name|
-    classes[cls_name] = data[cls_name]
-  end
-  classes
-end
-
 def find_elements_cannot_delete attempt_to_delete, known_cannot_delete=[]
-  all = load_from_dependencies
+  dependencies = YAML.load_file("./dependencies.yaml")
+  all_classes = dependencies["classes"]
+  all__markup = dependencies["pages"]
+  all__markup.merge! dependencies["components"]
+
   list_to_delete = attempt_to_delete
   puts "Size: #{list_to_delete.length}"
   list_to_delete = list_to_delete - known_cannot_delete
   puts "Size: #{list_to_delete.length}"
   cannot_delete = []
-  all.each_key do |org_class|
-    classes_to_stay_due_to_dependencies = all[org_class] & list_to_delete
+  all_classes.each_key do |org_class|
+    classes_to_stay_due_to_dependencies = all_classes[org_class] & list_to_delete
     if( ( classes_to_stay_due_to_dependencies ).length > 0 && !list_to_delete.include?(org_class) )
+      cannot_delete.concat classes_to_stay_due_to_dependencies
+    end
+  end
+
+  all__markup.each_key do |org_pages|
+    classes_to_stay_due_to_dependencies = all__markup[org_pages] & list_to_delete
+    if( ( classes_to_stay_due_to_dependencies ).length > 0 )#&& !list_to_delete.include?(org_class) )
       cannot_delete.concat classes_to_stay_due_to_dependencies
     end
   end
