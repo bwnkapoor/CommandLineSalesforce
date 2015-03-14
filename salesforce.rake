@@ -240,14 +240,14 @@ end
 
 task :chrome_incog, [:client, :environment] do |t, args|
   client = get_creds( args )
-  server_url = client["is_production"] ? "login.salesforce.com" : "test.salesforce.com"
+  server_url = client["is_production"] ? "https://login.salesforce.com" : "https://test.salesforce.com"
   cmd = "google-chrome --incognito \"#{server_url}?un=#{client['username']}&pw=#{client['password']}\""
   system cmd
 end
 
 task :chrome, [:client, :environment] do |t, args|
   client = get_creds( args )
-  server_url = client["is_production"] ? "login.salesforce.com" : "test.salesforce.com"
+  server_url = client["is_production"] ? "https://login.salesforce.com" : "https://test.salesforce.com"
   cmd = "google-chrome \"#{server_url}?un=#{client['username']}&pw=#{client['password']}\""
   system cmd
 end
