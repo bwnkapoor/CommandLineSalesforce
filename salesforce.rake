@@ -39,7 +39,12 @@ end
 # cannot delete some components...
 task :lazy do
   to_delete_classes = find_members_of_type_in_package "ApexClass"
-  cannot_delete = find_elements_cannot_delete to_delete_classes
+  to_delete_pages = find_members_of_type_in_package "ApexPage"
+  dependencies = YAML.load_file("./dependencies.yaml")
+  to_delete_pages.each do |to_del_pg|
+      dependencies["pages"].delete to_del_pg
+  end
+  cannot_delete = find_elements_cannot_delete to_delete_classes, dependencies
   cannot_delete_members = to_delete_classes - cannot_delete
   File.open('destruction.xml', 'w'){ |f| f.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                                                  "<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n" +
@@ -49,6 +54,12 @@ task :lazy do
                                                  cannot_delete_members.join("</members>\n        <members>") +
                                                  "</members>\n" +
                                                  "        <name>ApexClass</name>\n" +
+                                                 "    </types>\n" +
+                                                 "    <types>\n" +
+                                                 "        <members>" +
+                                                 to_delete_pages.join("</members>\n        <members>") +
+                                                 "</members>\n" +
+                                                 "        <name>ApexPage</name>\n" +
                                                  "    </types>\n" +
                                                  "    <version>33.0</version>\n" +
                                                  "</Package>"
@@ -344,8 +355,7 @@ def find_classes_unaccounted_for
   missing_classes
 end
 
-def find_elements_cannot_delete attempt_to_delete#, known_cannot_delete=[]
-  dependencies = YAML.load_file("./dependencies.yaml")
+def find_elements_cannot_delete attempt_to_delete, dependencies
   all_classes = dependencies["classes"]
   all__markup = dependencies["pages"]
   all__markup.merge! dependencies["components"]
@@ -372,7 +382,7 @@ def find_elements_cannot_delete attempt_to_delete#, known_cannot_delete=[]
   cannot_delete.uniq!
   if( !cannot_delete.empty? )
     puts "how many times?" + cannot_delete.length.to_s
-    cannot_delete.concat find_elements_cannot_delete (attempt_to_delete-cannot_delete)#, cannot_delete
+    cannot_delete.concat find_elements_cannot_delete (attempt_to_delete-cannot_delete), dependencies
   end
 
   cannot_delete
