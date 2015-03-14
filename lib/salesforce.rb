@@ -49,7 +49,7 @@ class Salesforce
   end
 
   def metadata_query( str_query )
-    @restforce.get( "/services/data/v#{SF_API_VERSION}/tooling/query/?q=#{str_query}" )
+    @restforce.get( "/services/data/v#{SF_API_VERSION}/tooling/query/?q=#{str_query}" ).body
   end
 
   def run_tests_synchronously( classes )

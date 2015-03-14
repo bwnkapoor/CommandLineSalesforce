@@ -42,11 +42,12 @@ class ApexComponent
   end
 
   def dependencies
+    puts "Logging Dependencies for: #{@name}"
     depends = []
     depends.push controller
     depends.concat extensions
     depends.concat attributes
-    depends
+    depends.compact
   end
 
   def self.dependencies page_names
@@ -62,6 +63,7 @@ class ApexComponent
     @body = options[:Markup]
     @folder = 'components'
     @name = options[:Name]
+    @id = options[:Id]
   end
 
   def pull
@@ -83,7 +85,7 @@ class ApexComponent
   end
 
   def get_class_sf_instance( searching_name=name )
-    Salesforce.instance.query("Select+Id,Name,Markup,SystemModstamp,NamespacePrefix+from+ApexComponent+where+name=\'#{searching_name}\'" )
+    Salesforce.instance.query("Select+Id,Name,Markup,SystemModstamp,NamespacePrefix+from+ApexComponent+where+name=\'#{searching_name}\' and NamespacePrefix=null" )
   end
 
   def save( metadataContainer )

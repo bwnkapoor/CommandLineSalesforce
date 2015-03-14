@@ -28,81 +28,25 @@ end
 
 task :play do
   store_environment_login
+  byebug
+  puts "Thanks for playing"
+=begin
   cls = ApexClass.new( {Name: 'SendEmailWithSF_Attachments'} )
   ext = cls.extends
+=end
 end
 
 # cannot delete some components...
 task :lazy do
-  to_delete = find_members_of_type_in_package "ApexClass"
-=begin
-  known_cannot_delete = ["cc_ctrl_JQueryInclude",
-  "cc_ctrl_Footer",
-  "cc_ctrl_Schema",
-  "cc_ctrl_SiteLogin",
-  "cc_ctrl_HomePage",
-  "cc_ctrl_ShippingAndHandling",
-  "cc_ctrl_mediaTab",
-  "cc_ctrl_CheckOut",
-  "cc_ctrl_ProductDetail",
-  "cc_ctrl_promotionExtension",
-  "cc_ctrl_Coupon",
-  "cc_ctrl_BreadCrumb",
-  "cc_extn_ProductCatalog",
-  "cc_ctrl_PriceList",
-  "cc_hlpr_CyberSourceHOP",
-  "cc_ctrl_documentTab",
-  "cc_ctrl_GetSession",
-  "cc_ctrl_GuidedSellingProfile",
-  "cc_ctrl_ChangePassword",
-  "cc_extn_HomePage",
-  "cc_ctrl_SendEmail",
-  "cc_ctrl_WishList",
-  "cc_extn_cart",
-  "cc_extn_PaymentShippingInfo",
-  "cc_ctrl_InitData",
-  "cc_ctrl_MyProfile",
-  "cc_ctrl_ProductList",
-  "cc_ctrl_PriceListItemTiers",
-  "cc_ctrl_HTMLHead",
-  "cc_ctrl_ProductListDisplayWidget",
-  "cc_ctrl_Cart",
-  "cc_ctrl_QuickOrder",
-  "cc_util_Order",
-  "cc_ctrl_MyOrderList",
-  "cc_ctrl_IEIncludes",
-  "cc_ctrl_RichText",
-  "cc_ctrl_CartList",
-  "cc_ctrl_PriceListExtension",
-  "cc_ctrl_promotion",
-  "cc_ctrl_RecentlyVisited",
-  "cc_ctrl_Formatter",
-  "cc_ctrl_Content",
-  "cc_ctrl_MenuBar",
-  "cc_ctrl_FeaturedProducts",
-  "cc_bean_ProductForm",
-  "cc_ctrl_CyberSourceReceipt",
-  "cc_ctrl_CCPayPalJump",
-  "cc_ctrl_CyberSourceHOP",
-  "cc_ctrl_SpecificationsTab",
-  "cc_ctrl_RelatedItems",
-  "cc_extn_UserInfo",
-  "cc_bean_ProductListViewData",
-  "cc_ctrl_Admin",
-  "cc_ctrl_CloudCraze",
-  "cc_ctrl_AddToCart",
-  "cc_ctrl_LocaleExtension",
-  "cc_ctrl_CheckoutYourInformation"]
-=end
-  cannot_delete = find_elements_cannot_delete to_delete, []#known_cannot_delete
-  x = to_delete - cannot_delete
-  #x = x - known_cannot_delete
+  to_delete_classes = find_members_of_type_in_package "ApexClass"
+  cannot_delete = find_elements_cannot_delete to_delete_classes
+  cannot_delete_members = to_delete_classes - cannot_delete
   File.open('destruction.xml', 'w'){ |f| f.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                                                  "<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n" +
                                                  "    <fullName>codepkg</fullName>\n" +
                                                  "    <types>\n" +
                                                  "        <members>" +
-                                                 x.join("</members>\n        <members>") +
+                                                 cannot_delete_members.join("</members>\n        <members>") +
                                                  "</members>\n" +
                                                  "        <name>ApexClass</name>\n" +
                                                  "    </types>\n" +
@@ -185,7 +129,7 @@ task :log_dependencies do
   pages = ApexPage.dependencies Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null").map(&:Name)
   components = ApexComponent.dependencies Salesforce.instance.query("Select Name from ApexComponent where NamespacePrefix=null").map(&:Name)
   classes = ApexClass.dependencies Salesforce.instance.query("Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
-  dependencies = {"components"=>components, "classes"=>classes[:dependencies], "pages"=>pages}
+  dependencies = {"components"=>components, "pages"=>pages, "classes"=>classes[:dependencies]}
   File.open('dependencies.yaml', 'w') {|f| f.write dependencies.to_yaml }
   File.open('not_defined.yaml', 'w') {|f| f.write classes[:symbol_tables_not_defined].to_yaml }
 end
@@ -400,7 +344,7 @@ def find_classes_unaccounted_for
   missing_classes
 end
 
-def find_elements_cannot_delete attempt_to_delete, known_cannot_delete=[]
+def find_elements_cannot_delete attempt_to_delete#, known_cannot_delete=[]
   dependencies = YAML.load_file("./dependencies.yaml")
   all_classes = dependencies["classes"]
   all__markup = dependencies["pages"]
@@ -408,8 +352,8 @@ def find_elements_cannot_delete attempt_to_delete, known_cannot_delete=[]
 
   list_to_delete = attempt_to_delete
   puts "Size: #{list_to_delete.length}"
-  list_to_delete = list_to_delete - known_cannot_delete
-  puts "Size: #{list_to_delete.length}"
+  #list_to_delete = list_to_delete - known_cannot_delete
+  #puts "Size: #{list_to_delete.length}"
   cannot_delete = []
   all_classes.each_key do |org_class|
     classes_to_stay_due_to_dependencies = all_classes[org_class] & list_to_delete
@@ -428,7 +372,7 @@ def find_elements_cannot_delete attempt_to_delete, known_cannot_delete=[]
   cannot_delete.uniq!
   if( !cannot_delete.empty? )
     puts "how many times?" + cannot_delete.length.to_s
-    cannot_delete.concat find_elements_cannot_delete (attempt_to_delete-cannot_delete), cannot_delete
+    cannot_delete.concat find_elements_cannot_delete (attempt_to_delete-cannot_delete)#, cannot_delete
   end
 
   cannot_delete

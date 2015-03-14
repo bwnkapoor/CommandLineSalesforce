@@ -15,15 +15,15 @@ module ApexMarkup
 
   def extensions
     doc = Nokogiri::HTML body
-    apex_page = doc.css "page"
+    apex_page = doc.css container_tag
+    ret = []
     if apex_page && !apex_page.empty?
       apex_page = apex_page[0]
       ctrl_attr = apex_page.attributes["extensions"]
       if ctrl_attr
-        ctrl_attr.value.split ","
+        ret = ctrl_attr.value.split ","
       end
-    else
-      []
     end
+    ret
   end
 end

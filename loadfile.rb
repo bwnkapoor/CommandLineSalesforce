@@ -23,9 +23,11 @@ def pull file_names
   files = []
   puts file_names.to_s
   file_names.each do |file|
+
     type = File.extname( file )
     file_name = File.basename file, File.extname(file)
-    type = apex_member_factory( type )
+
+    type = apex_member_factory( file )
     if( type  )
       member = type.pull( [file_name] )
       files.concat( member )
@@ -47,6 +49,10 @@ def apex_member_factory(file_name)
     ApexComponent
   elsif( type == ".trigger" )
     ApexTrigger
+=begin
+  elsif( type == ".resource" )
+    ApexStaticResource
+=end
   else
     puts "Not Supported Type #{type}"
     nil
@@ -65,7 +71,6 @@ def push files_paths_to_save
       base_name = File.basename(to_save_path, File.extname(to_save_path))
       cls = type.new({Name: base_name })
       cls.load_from_local_file(to_save_path)
-      saving_classes = { cls.name=>cls }
       puts cls.save( container )
       puts "saving..."
     else
@@ -80,8 +85,9 @@ def push files_paths_to_save
     puts "sleeping"
     sleep(1)
     results = Salesforce.instance.metadata_query "Select DeployDetails, State from ContainerAsyncRequest where id = \'#{deploy_id}\'"
-    results = results.body.current_page[0]
+    results = results.current_page[0]
   end
+
 
   has_errors = false
   results.DeployDetails.allComponentMessages.each do |message|
@@ -92,7 +98,6 @@ def push files_paths_to_save
       puts message.problem.to_s
       puts message.lineNumber.to_s
       puts message.problemType.to_s
-      #puts saving_classes[fileName].local_name
     end
   end
 

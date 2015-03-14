@@ -25,6 +25,17 @@ class ApexClass
     "ApexClass"
   end
 
+  def id
+    if !@id
+      definition = get_class_sf_instance.current_page
+      if !definition.empty?
+        @id = definition[0].Id
+      end
+    end
+
+    @id
+  end
+
   def extends
     if !@body
       @body = get_class_sf_instance.current_page[0].Body
@@ -44,7 +55,7 @@ class ApexClass
   def self.get_dependencies class_name
     dependencies = []
     x = Salesforce.instance.metadata_query( "Select SymbolTable, MetaData, FullName from ApexClassMember where FullName = \'#{class_name}\' order by createddate desc limit 1" )
-    x.body.current_page.each do |classMember|
+    x.current_page.each do |classMember|
       if classMember.SymbolTable
         classMember.SymbolTable.externalReferences.each do |xRef|
           dependencies.push xRef.name.to_s
@@ -157,7 +168,8 @@ class ApexClass
 
   def save( metadataContainer )
     if id
-      cls_member_id = Salesforce.instance.restforce.create( "ApexClassMember", Body: body,
+      cls_member_id = Salesforce.instance.restforce.create( "ApexClassMember",
+                                                               Body: body,
                                                                MetadataContainerId: metadataContainer.id,
                                                                ContentEntityId: id
                                               )
@@ -172,7 +184,7 @@ class ApexClass
                                                            }
                                               )
    end
-   puts cls_member_id
+   cls_member_id
   end
 
   def get_class_sf_instance( searching_name=@name )

@@ -33,10 +33,11 @@ class ApexPage
   end
 
   def dependencies
+    puts "Finding Dependencies for #{@name}"
     depends = []
     depends.push controller
     depends.concat extensions
-    depends
+    depends.compact
   end
 
   def self.dependencies page_names
