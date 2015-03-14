@@ -145,6 +145,13 @@ class ApexClass
     begin
       results = Salesforce.instance.run_tests_synchronously name
       @test_results = ApexTestResults.new results
+      test_res_file = "./test_results.yaml"
+      data = YAML.load_file test_res_file
+      if !data
+        data = {}
+      end
+      data[name] = @test_results
+      File.open( test_res_file, 'w'){ |f| f.write YAML.dump( data ) }
     rescue Faraday::TimeoutError
       puts "timeout"
     end

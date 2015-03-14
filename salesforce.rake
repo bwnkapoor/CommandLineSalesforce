@@ -197,17 +197,12 @@ end
 task :run_all_tests do
   store_environment_login
   all_apex_classes = Salesforce.instance.query( "Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
-  results = []
   all_apex_classes.each_with_index do |cls_name, i|
     puts "Running #{cls_name}"
     cls = ApexClass.new( Name: cls_name )
     cls.run_test
-    res = cls.test_results.to_hash
-    res['class'] = cls_name
-    results.push res
     puts "#{i+1}/#{all_apex_classes.length} tests have ran"
   end
-  File.open("test_results.yaml", 'w') { |f| YAML.dump(results, f) }
 end
 
 task :pull, [:file_names] do |t, args|
