@@ -64,14 +64,13 @@ class ApexStaticResource
   def save( metadataContainer )
     if id
       cls_member_id = Salesforce.instance.restforce.update( "StaticResource",
-                                                               Body: body,
+                                                               Body: Base64.encode64(body),
                                                                Name: name,
                                                                Id: id
 
                                               )
 
    else
-      byebug
       puts "not built yet"
       cls_member_id = Salesforce.instance.restforce.create( "StaticResource" , Name: name, Body: body, ContentType: content_type )
    end
