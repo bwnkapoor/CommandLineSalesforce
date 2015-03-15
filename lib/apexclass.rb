@@ -7,10 +7,26 @@ require_relative 'salesforce_job'
 
 class ApexClass
   include ApexBase
-  attr_reader :name, :folder, :id, :body, :local_name, :test_results
+  attr_reader :name, :folder, :id, :body, :local_name
 
   def file_ext
     return '.cls'
+  end
+
+  def test_results
+    if !@test_results
+       data = YAML.load_file 'test_results.yaml'
+      if data[@name]
+        @test_results = data[@name]
+      else
+        @test_results = run_test
+      end
+    end
+    @test_results
+  end
+
+  def test_class?
+    return test_results.num_tests_ran > 0
   end
 
   def initialize(options={})
@@ -134,7 +150,7 @@ class ApexClass
       puts "Keep this !#{monitoring_status.ParentJobId}'"
       results = Salesforce.instance.metadata_query( "Select MethodName,Outcome,StackTrace,TestTimestamp,Message,ApexLogId from ApexTestResult where AsyncApexJobId='#{monitoring_status.ParentJobId}'" )
       puts "we got results"
-      @test_results = ApexTestResults.new results
+      ApexTestResults.new results
       puts "done"
     rescue Exception=>e
       puts "the job is already running"
@@ -144,14 +160,19 @@ class ApexClass
   def run_test
     begin
       results = Salesforce.instance.run_tests_synchronously name
-      @test_results = ApexTestResults.new results
+      test_res = ApexTestResults.new results
       test_res_file = "./test_results.yaml"
-      data = YAML.load_file test_res_file
-      if !data
+      begin
+        data = YAML.load_file test_res_file
+        if !data
+          data = {}
+        end
+      rescue
         data = {}
       end
-      data[name] = @test_results
+      data[name] = test_res
       File.open( test_res_file, 'w'){ |f| f.write YAML.dump( data ) }
+      data[name]
     rescue Faraday::TimeoutError
       puts "timeout"
     end

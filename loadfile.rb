@@ -49,10 +49,8 @@ def apex_member_factory(file_name)
     ApexComponent
   elsif( type == ".trigger" )
     ApexTrigger
-=begin
   elsif( type == ".resource" )
     ApexStaticResource
-=end
   else
     puts "Not Supported Type #{type}"
     nil
