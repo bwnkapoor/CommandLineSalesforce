@@ -27,17 +27,12 @@ task :output_test_results do
 end
 
 task :play do
-  store_environment_login
-  byebug
-  puts "Thanks for playing"
-=begin
-  cls = ApexClass.new( {Name: 'SendEmailWithSF_Attachments'} )
-  ext = cls.extends
-=end
+
 end
 
 # cannot delete some components...
 task :lazy do
+  store_environment_login
   to_delete_classes = find_members_of_type_in_package "ApexClass"
   to_delete_pages = find_members_of_type_in_package "ApexPage"
   dependencies = YAML.load_file("./dependencies.yaml")
@@ -45,7 +40,17 @@ task :lazy do
       dependencies["pages"].delete to_del_pg
   end
   cannot_delete = find_elements_cannot_delete to_delete_classes, dependencies
+  rel_test_classes = classes_test_classes
+  more_cannot = []
+  cannot_delete.each do |cls|
+    if rel_test_classes[cls]
+      more_cannot.concat rel_test_classes[cls]
+    end
+  end
+  cannot_delete.concat more_cannot
   cannot_delete_members = to_delete_classes - cannot_delete
+  other_dependencies = find_elements_cannot_delete cannot_delete_members, dependencies
+  cannot_delete_members = cannot_delete_members - other_dependencies
   File.open('destruction.xml', 'w'){ |f| f.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                                                  "<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n" +
                                                  "    <fullName>codepkg</fullName>\n" +
@@ -381,4 +386,28 @@ def find_elements_cannot_delete attempt_to_delete, dependencies
   end
 
   cannot_delete
+end
+
+def classes_test_classes
+  classToTestClasses = {}
+  dependencies = YAML.load_file( "./dependencies.yaml" )
+  Salesforce.instance.query( "Select Name from ApexClass where Namespaceprefix=null").each do |cls|
+    cls = ApexClass.new( cls )
+    if cls.test_class?
+      if dependencies["classes"][cls.name]
+        dependencies["classes"][cls.name].each do |key|
+          test_owner = classToTestClasses[key]
+          if test_owner
+            test_owner.push( cls.name )
+          else
+            classToTestClasses[key] = [cls.name]
+          end
+        end
+      else
+        puts "Not in the dependencies list: #{cls.name}"
+      end
+    end
+    puts "#{cls.name} is test? #{cls.test_class?}"
+  end
+  classToTestClasses
 end

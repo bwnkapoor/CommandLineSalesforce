@@ -2,6 +2,7 @@ module ApexBase
   def load_from_local_file file_path
     file = File.open( file_path, 'r' )
     @body = file.read
+    @full_name = file_path
     fName = File.basename file
     @local_name = file_path
 
