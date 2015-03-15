@@ -39,6 +39,7 @@ end
 
 def apex_member_factory(file_name)
   type = File.extname( file_name )
+  whole_name = file_name
   file_name = File.basename file_name, File.extname(file_name)
 
   if( type == ".cls" )
@@ -49,7 +50,7 @@ def apex_member_factory(file_name)
     ApexComponent
   elsif( type == ".trigger" )
     ApexTrigger
-  elsif( type == ".resource" )
+  elsif( type == ".resource" || File.dirname(whole_name).end_with?("staticresources") )
     ApexStaticResource
   else
     puts "Not Supported Type #{type}"

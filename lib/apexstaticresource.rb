@@ -1,18 +1,29 @@
 require_relative 'salesforce'
 require_relative 'apexbase'
+require 'mime/types'
 
 class ApexStaticResource
   include ApexBase
   attr_reader :body, :name, :folder, :content_type
 
   def file_ext
-    return '.resource'
+    ext = MIME::Types[@content_type].first.extensions.first
+    return ".#{ext}"
+  end
+
+  def content_type
+    if !@content_type
+      @content_type = MIME::Types.of(@full_name).first.content_type
+    end
+    @content_type
   end
 
   def initialize(options={})
     @body = options[:Body]
     @id = options[:Id]
+    @full_name = options[:FullName]
     @test_results = options[:TestResults]
+    @content_type = options[:ContentType]
     @folder = 'staticresources'
     @name = options[:Name]
   end
@@ -40,6 +51,7 @@ class ApexStaticResource
     file_request = get_class_sf_instance
     cls = file_request.current_page[0]
     if cls
+      @content_type = cls.ContentType
       @body = Salesforce.instance.sf_get_callout( cls.Body ).body
       @id = cls.Id
     else
@@ -68,11 +80,15 @@ class ApexStaticResource
                                                                Name: name,
                                                                Id: id
 
-                                              )
+                      )
 
    else
       puts "not built yet"
-      cls_member_id = Salesforce.instance.restforce.create( "StaticResource" , Name: name, Body: body, ContentType: content_type )
+      cls_member_id = Salesforce.instance.restforce.create( "StaticResource" ,
+                                                            Name: name,
+                                                            Body: body,
+                                                            ContentType: content_type
+                       )
    end
    cls_member_id
   end

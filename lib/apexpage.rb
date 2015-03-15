@@ -56,16 +56,24 @@ class ApexPage
   def pull
     file_request = get_class_sf_instance()
     cls = file_request.current_page[0]
-    @body = cls.Markup
-    @id = cls.Id
+    if cls
+      @body = cls.Markup
+      @id = cls.Id
+    else
+      raise "Page Does not exist #{@name}"
+    end
   end
 
   def self.pull fileNames
     pages = []
     fileNames.each do |file|
       pg = ApexPage.new( {Name: file} )
-      pg.pull
-      pages.push pg
+      begin
+        pg.pull
+        pages.push pg
+      rescue Exception=>e
+        puts e.to_s
+      end
     end
 
     pages
