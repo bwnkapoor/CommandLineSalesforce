@@ -1,4 +1,8 @@
+require 'yaml'
+
 module ApexBase
+  SYMBOLIC_FILE_NAME = 'symbolic_table.yaml'
+
   def load_from_local_file file_path
     file = File.open( file_path, 'r' )
     @body = file.read
@@ -24,5 +28,37 @@ module ApexBase
     url = "/services/data/v33.0/sobjects/#{type}/#{id}"
     res = Salesforce.instance.sf_delete_callout( url )
     puts res.response
+  end
+
+  def log_symbolic_link
+    symbolic_link = load_symbol_links
+    if !symbolic_link[self.class]
+      symbolic_link[self.class] = {}
+    end
+    symbolic_link[self.class][@name] = {
+      "local_name"=>@local_name,
+      "id"=>@id
+    }
+    File.open(SYMBOLIC_FILE_NAME, 'w'){ |f| f.write YAML.dump symbolic_link }
+  end
+
+  def find_symbol_local_link
+    symbols = load_symbol_links
+    if symbols[self.class] && symbols[self.class][@name]
+      f = symbols[self.class][@name]["local_name"]
+      @folder = File.dirname f
+    else
+      nil
+    end
+  end
+
+  def load_symbol_links
+    begin
+      symbolic_link = YAML.load_file SYMBOLIC_FILE_NAME
+    rescue Exception=>e
+      symbolic_link = {}
+      puts "Symbolic Table file Not found"
+    end
+    symbolic_link
   end
 end
