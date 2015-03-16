@@ -4,6 +4,7 @@ require 'find'
 require_relative 'dependencies'
 require_relative 'lib/readpackagexml'
 require_relative 'lib/file_watcher_task'
+require 'io/console'
 
 task :monitor do
   do_watch
@@ -27,10 +28,6 @@ task :output_test_results do
       puts "------------------------------------------------------------------------------------------------------------------------------------------"
     end
   end
-end
-
-task :play do
-
 end
 
 # cannot delete some components...
