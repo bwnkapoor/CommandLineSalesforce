@@ -3,8 +3,11 @@ require 'yaml'
 require 'find'
 require_relative 'dependencies'
 require_relative 'lib/readpackagexml'
+require_relative 'lib/file_watcher_task'
 
-@logins_path = '/home/justin/buildTool/build_tool.yaml'
+task :monitor do
+  do_watch
+end
 
 task :output_test_results do
   classes = ApexClass.load_from_test_coverage
@@ -289,19 +292,7 @@ task :sfwho do
   puts "Client: \"#{client}\"\nEnvironment: \"#{sandbox}\""
 end
 
-def store_environment_login
-  creds = who_am_i
 
-  begin
-    ENV["SF_USERNAME"] = creds["username"]
-    ENV["SF_PASSWORD"] = creds["password"]
-    isProd = creds["is_production"]
-    ENV["SF_CLIENT_SECRET"] = "2764242436952695913"
-    ENV["SF_HOST"] = isProd ? "login.salesforce.com" : "test.salesforce.com"
-  rescue Exception=>e
-    puts "Ensure you have a \"username\" and \"password\" for #{client} #{sandbox}"
-  end
-end
 
 def find_to_save
   to_save = []
@@ -314,18 +305,6 @@ def find_to_save
   to_save
 end
 
-def who_am_i
-  data = YAML.load_file @logins_path
-  client = data["client"]
-  sandbox = data["environment"]
-  begin
-    creds = data["clients"][client][sandbox]
-  rescue Exception=>e
-    puts "Please login first"
-    return
-  end
-  creds
-end
 
 def get_creds( args )
   client = args[:client]

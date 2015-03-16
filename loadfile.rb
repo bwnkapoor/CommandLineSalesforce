@@ -1,6 +1,7 @@
 require 'byebug'
 require 'fileutils'
 require 'date'
+require 'yaml'
 require_relative 'lib/containerasyncrequest'
 require_relative 'lib/metadatacontainer'
 require_relative 'lib/apexclass'
@@ -8,6 +9,8 @@ require_relative 'lib/apexpage'
 require_relative 'lib/apexcomponent'
 require_relative 'lib/apexstaticresource'
 require_relative 'lib/apextrigger'
+
+@logins_path = '/home/justin/buildTool/build_tool.yaml'
 
 def write files
   files.each do |sf_file|
@@ -26,11 +29,11 @@ def pull file_names
 
     type = File.extname( file )
     file_name = File.basename file, File.extname(file)
-
-    type = apex_member_factory( file )
-    if( type  )
+    begin
+      type = apex_member_factory( file )
       member = type.pull( [file_name] )
       files.concat( member )
+    rescue Exception=>e
     end
   end
   write files
@@ -53,8 +56,7 @@ def apex_member_factory(file_name)
   elsif( type == ".resource" || File.dirname(whole_name).end_with?("staticresources") )
     ApexStaticResource
   else
-    puts "Not Supported Type #{type}"
-    nil
+    raise "Not Supported Type #{type}"
   end
 end
 
@@ -64,15 +66,14 @@ def push files_paths_to_save
   container.save()
   if files_paths_to_save.class != Array then files_paths_to_save = [files_paths_to_save] end
   files_paths_to_save.each do |to_save_path|
-    type = apex_member_factory( to_save_path )
-
-    if( type )
+    begin
+      type = apex_member_factory( to_save_path )
       base_name = File.basename(to_save_path, File.extname(to_save_path))
       cls = type.new({Name: base_name })
       cls.load_from_local_file(to_save_path)
       puts cls.save( container )
       puts "saving..."
-    else
+    rescue Exception=>e
       puts "Failed to save #{to_save_path}"
     end
   end
@@ -97,10 +98,38 @@ def push files_paths_to_save
       puts message.problem.to_s
       puts message.lineNumber.to_s
       puts message.problemType.to_s
+      puts "For class: #{message.fileName}\n\n"
     end
   end
 
   if !has_errors
     puts "Saved"
   end
+end
+
+def store_environment_login
+  creds = who_am_i
+
+  begin
+    ENV["SF_USERNAME"] = creds["username"]
+    ENV["SF_PASSWORD"] = creds["password"]
+    isProd = creds["is_production"]
+    ENV["SF_CLIENT_SECRET"] = "2764242436952695913"
+    ENV["SF_HOST"] = isProd ? "login.salesforce.com" : "test.salesforce.com"
+  rescue Exception=>e
+    puts "Ensure you have a \"username\" and \"password\" for #{client} #{sandbox}"
+  end
+end
+
+def who_am_i
+  data = YAML.load_file @logins_path
+  client = data["client"]
+  sandbox = data["environment"]
+  begin
+    creds = data["clients"][client][sandbox]
+  rescue Exception=>e
+    puts "Please login first"
+    return
+  end
+  creds
 end
