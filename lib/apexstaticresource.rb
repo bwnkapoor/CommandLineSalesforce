@@ -61,6 +61,9 @@ class ApexStaticResource
 
   def self.pull fileNames
     classes = []
+    if( fileNames.length == 1 && fileNames[0] == "*" )
+      fileNames = Salesforce.instance.query("Select Name from StaticResource").map(&:Name)
+    end
     fileNames.each do |file|
       cls = ApexStaticResource.new( {Name: file} )
       begin

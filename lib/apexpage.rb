@@ -66,6 +66,9 @@ class ApexPage
 
   def self.pull fileNames
     pages = []
+    if( fileNames.length == 1 && fileNames[0] == "*" )
+      fileNames = Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null").map(&:Name)
+    end
     fileNames.each do |file|
       pg = ApexPage.new( {Name: file} )
       begin
