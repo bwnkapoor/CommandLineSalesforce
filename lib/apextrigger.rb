@@ -61,6 +61,7 @@ class ApexTrigger
 
   def self.pull fileNames
     classes = []
+    puts "Pulling Triggers"
     if( fileNames.length == 1 && fileNames[0] == "*" )
       fileNames = Salesforce.instance.query("Select Name from ApexTrigger where NamespacePrefix=Null").map(&:Name)
     end

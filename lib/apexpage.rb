@@ -66,6 +66,7 @@ class ApexPage
 
   def self.pull fileNames
     pages = []
+    puts "Pulling Pages"
     if( fileNames.length == 1 && fileNames[0] == "*" )
       fileNames = Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null").map(&:Name)
     end

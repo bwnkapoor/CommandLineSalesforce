@@ -75,6 +75,7 @@ class ApexComponent
 
   def self.pull fileNames
     components = []
+    puts "Pulling Components"
     if fileNames.length == 1 && fileNames[0] == "*"
       fileNames = Salesforce.instance.query("Select Name from ApexComponent where NamespacePrefix=null").map(&:Name)
     end

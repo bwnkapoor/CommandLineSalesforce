@@ -7,7 +7,12 @@ class ApexStaticResource
   attr_reader :body, :name, :folder, :content_type
 
   def file_ext
-    ext = MIME::Types[@content_type].first.extensions.first
+    ext = MIME::Types[@content_type]
+    if ext.first
+      ext = ext.first.extensions.first
+    else
+      ext = "resource"
+    end
     return ".#{ext}"
   end
 
@@ -61,6 +66,7 @@ class ApexStaticResource
 
   def self.pull fileNames
     classes = []
+    puts "Pulling StaticResources"
     if( fileNames.length == 1 && fileNames[0] == "*" )
       fileNames = Salesforce.instance.query("Select Name from StaticResource").map(&:Name)
     end
