@@ -33,16 +33,7 @@ task :output_test_results do
   classes.each do |cls|
     if cls.test_results.failures?
       puts "Failing Class: #{cls.name}\n\n"
-      cls.test_results.failures.each do |fail|
-        puts "MethodName: #{fail['methodName']}"
-        puts "Trace: #{fail['stackTrace']}"
-        puts "Message: #{fail['message']}\n\n"
-        log_id = fail['logid']
-        if log_id
-          puts "LogId: #{log_id}"
-        end
-      end
-      puts "------------------------------------------------------------------------------------------------------------------------------------------"
+      puts cls.test_results.to_s
     end
   end
 end

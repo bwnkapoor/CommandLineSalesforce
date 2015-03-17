@@ -186,8 +186,8 @@ class ApexClass
     classes = []
     data = YAML.load_file "./test_results.yaml"
     data.each do |result|
-      name = result.delete("class")
-      test_results = ApexTestResults.new result
+      name = result[0]
+      test_results = result[1]
       cls = ApexClass.new( { Name: name, TestResults: test_results} )
       classes.push cls
     end
