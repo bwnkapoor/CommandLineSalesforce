@@ -41,3 +41,77 @@ task :lazy do
                                     }
 
 end
+
+def find_classes_unaccounted_for
+  User::login
+  all_apex_classes = []
+  Salesforce.instance.query( "Select Name from ApexClass where NamespacePrefix=null").each { |pg|
+    all_apex_classes.push( pg )
+  }
+  all_apex_classes = all_apex_classes.map(&:Name)
+  all_apex_classes.each_index { |i| all_apex_classes[i] = all_apex_classes[i].upcase }
+  classes = ApexClass.load_from_test_coverage
+  accounted_for_classes = classes.map(&:name)
+  accounted_for_classes.each_index { |i| accounted_for_classes[i] = accounted_for_classes[i].upcase }
+  missing_classes = all_apex_classes.select{ |class_name|
+    !accounted_for_classes.include?(class_name)
+  }
+  missing_classes
+end
+
+def find_elements_cannot_delete attempt_to_delete, dependencies
+  all_classes = dependencies["classes"]
+  all__markup = dependencies["pages"]
+  all__markup.merge! dependencies["components"]
+
+  list_to_delete = attempt_to_delete
+  puts "Size: #{list_to_delete.length}"
+  #list_to_delete = list_to_delete - known_cannot_delete
+  #puts "Size: #{list_to_delete.length}"
+  cannot_delete = []
+  all_classes.each_key do |org_class|
+    classes_to_stay_due_to_dependencies = all_classes[org_class] & list_to_delete
+    if( ( classes_to_stay_due_to_dependencies ).length > 0 && !list_to_delete.include?(org_class) )
+      cannot_delete.concat classes_to_stay_due_to_dependencies
+    end
+  end
+
+  all__markup.each_key do |org_pages|
+    classes_to_stay_due_to_dependencies = all__markup[org_pages] & list_to_delete
+    if( ( classes_to_stay_due_to_dependencies ).length > 0 )#&& !list_to_delete.include?(org_class) )
+      cannot_delete.concat classes_to_stay_due_to_dependencies
+    end
+  end
+
+  cannot_delete.uniq!
+  if( !cannot_delete.empty? )
+    puts "how many times?" + cannot_delete.length.to_s
+    cannot_delete.concat find_elements_cannot_delete (attempt_to_delete-cannot_delete), dependencies
+  end
+
+  cannot_delete
+end
+
+def classes_test_classes
+  classToTestClasses = {}
+  dependencies = YAML.load_file( "./dependencies.yaml" )
+  Salesforce.instance.query( "Select Name from ApexClass where Namespaceprefix=null").each do |cls|
+    cls = ApexClass.new( cls )
+    if cls.test_class?
+      if dependencies["classes"][cls.name]
+        dependencies["classes"][cls.name].each do |key|
+          test_owner = classToTestClasses[key]
+          if test_owner
+            test_owner.push( cls.name )
+          else
+            classToTestClasses[key] = [cls.name]
+          end
+        end
+      else
+        puts "Not in the dependencies list: #{cls.name}"
+      end
+    end
+    puts "#{cls.name} is test? #{cls.test_class?}"
+  end
+  classToTestClasses
+end

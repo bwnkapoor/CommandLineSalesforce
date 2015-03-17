@@ -7,7 +7,6 @@ require 'timeout'
 def do_watch
   puts "Monitoring Salesforce files..."
   FileWatcher.new(".").watch(0.25) do |filename, event|
-    store_environment_login
     begin
       type = apex_member_factory filename
       if type

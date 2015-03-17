@@ -10,7 +10,7 @@ require_relative 'lib/apexcomponent'
 require_relative 'lib/apexstaticresource'
 require_relative 'lib/apextrigger'
 
-@logins_path = '/home/justin/buildTool/build_tool.yaml'
+
 
 def write files
   files.each do |sf_file|
@@ -107,52 +107,4 @@ def push files_paths_to_save
   if !has_errors
     puts "Saved"
   end
-end
-
-def login client=nil, environment=nil
-  if client && environment
-    login_as_user client, environment
-  else
-    login_with_current_credentials
-  end
-end
-
-def login_as_user client, environment
-  data = YAML.load_file @logins_path
-  theClient = data["clients"][client]
-
-  if theClient && theClient[environment]
-    data["client"] = client
-    data["environment"] = environment
-    File.open(@logins_path, 'w') { |f| YAML.dump(data, f) }
-  else
-    raise "#{client.to_s} #{environment.to_s} does not exist"
-  end
-end
-
-def login_with_current_credentials
-  creds = who_am_i
-
-  begin
-    ENV["SF_USERNAME"] = creds["username"]
-    ENV["SF_PASSWORD"] = creds["password"]
-    isProd = creds["is_production"]
-    ENV["SF_CLIENT_SECRET"] = "2764242436952695913"
-    ENV["SF_HOST"] = isProd ? "login.salesforce.com" : "test.salesforce.com"
-  rescue Exception=>e
-    puts "Ensure you have a \"username\" and \"password\" for #{client} #{sandbox}"
-  end
-end
-
-def who_am_i
-  data = YAML.load_file @logins_path
-  client = data["client"]
-  sandbox = data["environment"]
-  begin
-    creds = data["clients"][client][sandbox]
-  rescue Exception=>e
-    puts "Please login first"
-    return
-  end
-  creds
 end
