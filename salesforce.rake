@@ -10,6 +10,20 @@ task :monitor do
   do_watch
 end
 
+task :log_symbolic_links do
+  store_environment_login
+  Find.find('.') do |file|
+    begin
+      cls = apex_member_factory(file)
+      file_name = File.basename file, File.extname(file)
+      cls = cls.new({Name: file_name})
+      cls.load_from_local_file file
+      cls.log_symbolic_link
+    rescue Exception=>e
+    end
+  end
+end
+
 task :output_test_results do
   classes = ApexClass.load_from_test_coverage
   puts "Classes Ran: #{classes.length}"
@@ -28,48 +42,6 @@ task :output_test_results do
       puts "------------------------------------------------------------------------------------------------------------------------------------------"
     end
   end
-end
-
-# cannot delete some components...
-task :lazy do
-  store_environment_login
-  to_delete_classes = find_members_of_type_in_package "ApexClass"
-  to_delete_pages = find_members_of_type_in_package "ApexPage"
-  dependencies = YAML.load_file("./dependencies.yaml")
-  to_delete_pages.each do |to_del_pg|
-      dependencies["pages"].delete to_del_pg
-  end
-  cannot_delete = find_elements_cannot_delete to_delete_classes, dependencies
-  rel_test_classes = classes_test_classes
-  more_cannot = []
-  cannot_delete.each do |cls|
-    if rel_test_classes[cls]
-      more_cannot.concat rel_test_classes[cls]
-    end
-  end
-  cannot_delete.concat more_cannot
-  cannot_delete_members = to_delete_classes - cannot_delete
-  other_dependencies = find_elements_cannot_delete cannot_delete_members, dependencies
-  cannot_delete_members = cannot_delete_members - other_dependencies
-  File.open('destruction.xml', 'w'){ |f| f.write "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                                 "<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n" +
-                                                 "    <fullName>codepkg</fullName>\n" +
-                                                 "    <types>\n" +
-                                                 "        <members>" +
-                                                 cannot_delete_members.join("</members>\n        <members>") +
-                                                 "</members>\n" +
-                                                 "        <name>ApexClass</name>\n" +
-                                                 "    </types>\n" +
-                                                 "    <types>\n" +
-                                                 "        <members>" +
-                                                 to_delete_pages.join("</members>\n        <members>") +
-                                                 "</members>\n" +
-                                                 "        <name>ApexPage</name>\n" +
-                                                 "    </types>\n" +
-                                                 "    <version>33.0</version>\n" +
-                                                 "</Package>"
-                                    }
-
 end
 
 task :delete, [:file_path] do |t,args|

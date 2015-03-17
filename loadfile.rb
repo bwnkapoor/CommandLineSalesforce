@@ -14,6 +14,7 @@ require_relative 'lib/apextrigger'
 
 def write files
   files.each do |sf_file|
+    sf_file.find_symbol_local_link
     FileUtils.mkdir_p sf_file.folder
     f = File.new( sf_file.path, "w" )
     f.write( sf_file.body )
@@ -32,6 +33,7 @@ def pull file_names
     begin
       type = apex_member_factory( file )
       member = type.pull( [file_name] )
+
       files.concat( member )
     rescue Exception=>e
     end
