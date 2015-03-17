@@ -10,19 +10,27 @@ class Salesforce
 
   def initialize(attributes={})
     host = ENV["SF_HOST"]
-    @restforce = Restforce.tooling :client_secret=>ENV["SF_CLIENT_SECRET"],
-                                   :client_id=>ENV["SF_CLIENT_ID"],
-                                   :username=>ENV["SF_USERNAME"],
-                                   :password=>ENV["SF_PASSWORD"],
-                                   :api_version=>SF_API_VERSION,
-                                   :host=>host
+    if !ENV["SF_INSTANCE_URL"] || !ENV["SF_OAUTH"]
+      @restforce = Restforce.tooling :client_secret=>ENV["SF_CLIENT_SECRET"],
+                                     :client_id=>ENV["SF_CLIENT_ID"],
+                                     :username=>ENV["SF_USERNAME"],
+                                     :password=>ENV["SF_PASSWORD"],
+                                     :api_version=>SF_API_VERSION,
+                                     :host=>host
 
-    @sf = Restforce.new :client_secret=>ENV["SF_CLIENT_SECRET"],
-                                   :client_id=>ENV["SF_CLIENT_ID"],
-                                   :username=>ENV["SF_USERNAME"],
-                                   :password=>ENV["SF_PASSWORD"],
-                                   :api_version=>SF_API_VERSION,
-                                   :host=>host
+      @sf = Restforce.new :client_secret=>ENV["SF_CLIENT_SECRET"],
+                                     :client_id=>ENV["SF_CLIENT_ID"],
+                                     :username=>ENV["SF_USERNAME"],
+                                     :password=>ENV["SF_PASSWORD"],
+                                     :api_version=>SF_API_VERSION,
+                                     :host=>host
+    else
+      @restforce = Restforce.tooling :oauth_token=>ENV["SF_CLIENT_SECRET"],
+                                     :instance_url=>ENV["SF_CLIENT_ID"]
+
+      @sf = Restforce.new :oauth_token=>ENV["SF_OAUTH"],
+                          :instance_url=>ENV["SF_INSTANCE_URL"]
+    end
     self.class.base_uri restforce.instance_url
     @session_id = restforce.options[:oauth_token]
   end

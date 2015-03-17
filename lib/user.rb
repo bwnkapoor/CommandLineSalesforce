@@ -19,6 +19,8 @@ module User
       ENV["SF_HOST"] = is_production ? "login.salesforce.com" : "test.salesforce.com"
       @instance_url = Salesforce.instance.restforce.instance_url
       @oauth_token = Salesforce.instance.restforce.options[:oauth_token]
+      ENV["SF_INSTANCE_URL"] = @instance_url
+      ENV["SF_OAUTH"] = @oauth_token
     end
 
     def to_hash
