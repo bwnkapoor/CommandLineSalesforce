@@ -14,15 +14,29 @@ class ApexClass
   end
 
   def test_results
-    if !@test_results
-       data = YAML.load_file 'test_results.yaml'
-      if data[@name]
-        @test_results = data[@name]
-      else
-        @test_results = run_test
-      end
+    begin
+      data = YAML.load_file 'test_results.yaml'
+    rescue Exception=>e
+      data = {}
     end
+
+    if data[@name]
+      @test_results = data[@name]
+    else
+      @test_results = run_test
+    end
+
     @test_results
+  end
+
+  def self.run_all_tests
+    all_apex_classes = Salesforce.instance.query( "Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
+    all_apex_classes.each_with_index do |cls_name, i|
+      puts "Running #{cls_name}"
+      cls = ApexClass.new( Name: cls_name )
+      cls.run_test
+      puts "#{i+1}/#{all_apex_classes.length} tests have ran"
+    end
   end
 
   def test_class?
@@ -142,44 +156,26 @@ class ApexClass
 
     begin
       job = SalesforceJob.run_tests_asynchronously @id
-      status = "Processing"
-      escape_status = ["Aborted", "Completed", "Failed"]
-      puts "Monitoring Job: #{@id}"
-      while !escape_status.include?status
-        sleep(5)
-        monitoring_status = job.monitor.body.current_page[0]
-        status = monitoring_status.Status
-        puts "Status: #{status}"
-      end
-      puts "Keep this !#{monitoring_status.ParentJobId}'"
-      results = Salesforce.instance.metadata_query( "Select MethodName,Outcome,StackTrace,TestTimestamp,Message,ApexLogId from ApexTestResult where AsyncApexJobId='#{monitoring_status.ParentJobId}'" )
-      puts "we got results"
-      ApexTestResults.new results
-      puts "done"
     rescue Exception=>e
-      puts "the job is already running"
+      raise "the job is already running #{e}"
     end
   end
 
   def run_test
+    results = Salesforce.instance.run_tests_synchronously name
+    test_res = ApexTestResults.new results
+    test_res_file = "./test_results.yaml"
     begin
-      results = Salesforce.instance.run_tests_synchronously name
-      test_res = ApexTestResults.new results
-      test_res_file = "./test_results.yaml"
-      begin
-        data = YAML.load_file test_res_file
-        if !data
-          data = {}
-        end
-      rescue
+      data = YAML.load_file test_res_file
+      if !data
         data = {}
       end
-      data[name] = test_res
-      File.open( test_res_file, 'w'){ |f| f.write YAML.dump( data ) }
-      data[name]
-    rescue Faraday::TimeoutError
-      puts "timeout"
+    rescue
+      data = {}
     end
+    data[name] = test_res
+    File.open( test_res_file, 'w'){ |f| f.write YAML.dump( data ) }
+    test_res
   end
 
   def self.only_test_classes all_classes

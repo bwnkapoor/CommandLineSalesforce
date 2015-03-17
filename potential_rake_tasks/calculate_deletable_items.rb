@@ -42,6 +42,16 @@ task :lazy do
 
 end
 
+task :log_dependencies do
+  User::login
+  pages = ApexPage.dependencies Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null").map(&:Name)
+  components = ApexComponent.dependencies Salesforce.instance.query("Select Name from ApexComponent where NamespacePrefix=null").map(&:Name)
+  classes = ApexClass.dependencies Salesforce.instance.query("Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
+  dependencies = {"components"=>components, "pages"=>pages, "classes"=>classes[:dependencies]}
+  File.open('dependencies.yaml', 'w') {|f| f.write dependencies.to_yaml }
+  File.open('not_defined.yaml', 'w') {|f| f.write classes[:symbol_tables_not_defined].to_yaml }
+end
+
 def find_classes_unaccounted_for
   User::login
   all_apex_classes = []
@@ -90,6 +100,55 @@ def find_elements_cannot_delete attempt_to_delete, dependencies
   end
 
   cannot_delete
+end
+
+task :compile_all do
+  User::login
+
+  classes = Salesforce.instance.query( "Select Id,Name,Body from ApexClass where NamespacePrefix=null")
+  chunking_size = 20
+  classes.each_slice( chunking_size ).to_a.each_with_index do |chunk, i|
+    container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
+    puts "saving the container"
+    container.save()
+
+    chunk.each_with_index do |cls, i|
+      puts "Saving... #{cls.Name}"
+      cls = ApexClass.new( cls )
+      cls.save container
+    end
+
+    asynch = ContainerAsyncRequest.new( container.id )
+    deploy_id = asynch.save
+    results = nil
+    while !results || (results.State != 'Completed' && results.State != 'Failed')
+      puts "sleeping"
+      sleep(1)
+      results = Salesforce.instance.metadata_query "Select DeployDetails, State from ContainerAsyncRequest where id = \'#{deploy_id}\'"
+      results = results.body.current_page[0]
+    end
+
+    has_errors = false
+    results.DeployDetails.allComponentMessages.each do |message|
+      fileName = message.fileName.to_s
+      if message.success then puts "Success" else puts "Oh No!" end
+      if !message.success
+        has_errors = true
+        puts message.problem.to_s
+        puts message.lineNumber.to_s
+        puts message.problemType.to_s
+        #puts saving_classes[fileName].local_name
+      end
+    end
+
+    if !has_errors
+      puts "Saved"
+    else
+      puts "Failed to save #{container.id}"
+    end
+
+    puts "Compiled #{i+1}/#{chunking_size}"
+  end
 end
 
 def classes_test_classes

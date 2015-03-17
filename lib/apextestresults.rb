@@ -8,9 +8,9 @@ class ApexTestResults
         total_time = results.body["totalTime"]
         initialize_failures results
         initialize_successes results
-      else
-        parse_asynch results
       end
+    elsif results.class == Restforce::Collection
+      parse_asynch results
     else
       @successes = results["successes"]
       @failures = results["failures"]
@@ -33,6 +33,22 @@ class ApexTestResults
     hash = {}
     self.instance_variables.each {|var| hash[var.to_s.delete("@")] = self.instance_variable_get(var) }
     hash
+  end
+
+  def to_s
+    str = []
+    str.push "Success Rate: #{successes.length}/#{num_tests_ran}"
+    failures.each do |fail|
+      str.push "MethodName: #{fail['methodName']}"
+      str.push "Message: #{fail['message']}"
+      str.push "StackTrace: #{fail['stackTrace']}"
+      log_id = fail['logid']
+      if( log_id )
+        str.push "LogId: #{log_id}"
+      end
+      str.push "-----------------------"
+    end
+    str.join("\n")
   end
 
   private
@@ -66,7 +82,7 @@ class ApexTestResults
       @successes = []
       @failures = []
 
-      async_results.body.each do |test_res|
+      async_results.each do |test_res|
         method_name = test_res["MethodName"],
         outcome = test_res["Outcome"]
 

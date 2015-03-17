@@ -94,93 +94,17 @@ task :run_test, [:file_name, :sync] do |t, args|
   cls = ApexClass.new( {Name: test_file } )
   if args[:sync]
     cls.run_test
+    test_results = cls.test_results
   else
-    cls.run_test_async
+    job = cls.run_test_async
+    test_results = job.monitor_until_done
   end
-
-  if( cls.test_results )
-    puts "Success Rate: #{cls.test_results.successes.length}/#{cls.test_results.num_tests_ran}"
-    cls.test_results.failures.each do |fail|
-      puts "MethodName: #{fail['methodName']}"
-      puts "Message: #{fail['message']}"
-      puts "StackTrace: #{fail['stackTrace']}"
-      log_id = fail['logid']
-      if( log_id )
-        puts "LogId: #{log_id}"
-      end
-      puts "-----------------------"
-    end
-  end
-end
-
-task :log_dependencies do
-  User::login
-  pages = ApexPage.dependencies Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null").map(&:Name)
-  components = ApexComponent.dependencies Salesforce.instance.query("Select Name from ApexComponent where NamespacePrefix=null").map(&:Name)
-  classes = ApexClass.dependencies Salesforce.instance.query("Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
-  dependencies = {"components"=>components, "pages"=>pages, "classes"=>classes[:dependencies]}
-  File.open('dependencies.yaml', 'w') {|f| f.write dependencies.to_yaml }
-  File.open('not_defined.yaml', 'w') {|f| f.write classes[:symbol_tables_not_defined].to_yaml }
-end
-
-task :compile_all do
-  User::login
-
-  classes = Salesforce.instance.query( "Select Id,Name,Body from ApexClass where NamespacePrefix=null")
-  chunking_size = 20
-  classes.each_slice( chunking_size ).to_a.each_with_index do |chunk, i|
-    container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
-    puts "saving the container"
-    container.save()
-
-    chunk.each_with_index do |cls, i|
-      puts "Saving... #{cls.Name}"
-      cls = ApexClass.new( cls )
-      cls.save container
-    end
-
-    asynch = ContainerAsyncRequest.new( container.id )
-    deploy_id = asynch.save
-    results = nil
-    while !results || (results.State != 'Completed' && results.State != 'Failed')
-      puts "sleeping"
-      sleep(1)
-      results = Salesforce.instance.metadata_query "Select DeployDetails, State from ContainerAsyncRequest where id = \'#{deploy_id}\'"
-      results = results.body.current_page[0]
-    end
-
-    has_errors = false
-    results.DeployDetails.allComponentMessages.each do |message|
-      fileName = message.fileName.to_s
-      if message.success then puts "Success" else puts "Oh No!" end
-      if !message.success
-        has_errors = true
-        puts message.problem.to_s
-        puts message.lineNumber.to_s
-        puts message.problemType.to_s
-        #puts saving_classes[fileName].local_name
-      end
-    end
-
-    if !has_errors
-      puts "Saved"
-    else
-      puts "Failed to save #{container.id}"
-    end
-
-    puts "Compiled #{i+1}/#{chunking_size}"
-  end
+  puts test_results.to_s
 end
 
 task :run_all_tests do
   User::login
-  all_apex_classes = Salesforce.instance.query( "Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
-  all_apex_classes.each_with_index do |cls_name, i|
-    puts "Running #{cls_name}"
-    cls = ApexClass.new( Name: cls_name )
-    cls.run_test
-    puts "#{i+1}/#{all_apex_classes.length} tests have ran"
-  end
+  ApexClass.run_all_tests
 end
 
 task :pull, [:file_names] do |t, args|
