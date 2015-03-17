@@ -109,7 +109,28 @@ def push files_paths_to_save
   end
 end
 
-def store_environment_login
+def login client=nil, environment=nil
+  if client && environment
+    login_as_user client, environment
+  else
+    login_with_current_credentials
+  end
+end
+
+def login_as_user client, environment
+  data = YAML.load_file @logins_path
+  theClient = data["clients"][client]
+
+  if theClient && theClient[environment]
+    data["client"] = client
+    data["environment"] = environment
+    File.open(@logins_path, 'w') { |f| YAML.dump(data, f) }
+  else
+    raise "#{client.to_s} #{environment.to_s} does not exist"
+  end
+end
+
+def login_with_current_credentials
   creds = who_am_i
 
   begin

@@ -11,7 +11,7 @@ task :monitor do
 end
 
 task :log_symbolic_links do
-  store_environment_login
+  login
   Find.find('.') do |file|
     begin
       cls = apex_member_factory(file)
@@ -45,7 +45,7 @@ task :output_test_results do
 end
 
 task :delete, [:file_path] do |t,args|
-  store_environment_login
+  login
   file_name = args[:file_path]
   member = apex_member_factory(file_name)
   type = File.extname( file_name )
@@ -56,7 +56,7 @@ task :delete, [:file_path] do |t,args|
 end
 
 task :save, [:file_paths] do |t, args|
-  store_environment_login
+  login
   to_save = args[:file_paths]
   if( !to_save )
     to_save = find_to_save
@@ -88,7 +88,7 @@ task :force, [:client, :environment] do |t, args|
 end
 
 task :run_test, [:file_name, :sync] do |t, args|
-  store_environment_login
+  login
   test_file = args[:file_name]
   cls = ApexClass.new( {Name: test_file } )
   if args[:sync]
@@ -113,7 +113,7 @@ task :run_test, [:file_name, :sync] do |t, args|
 end
 
 task :log_dependencies do
-  store_environment_login
+  login
   pages = ApexPage.dependencies Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null").map(&:Name)
   components = ApexComponent.dependencies Salesforce.instance.query("Select Name from ApexComponent where NamespacePrefix=null").map(&:Name)
   classes = ApexClass.dependencies Salesforce.instance.query("Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
@@ -123,7 +123,7 @@ task :log_dependencies do
 end
 
 task :compile_all do
-  store_environment_login
+  login
 
   classes = Salesforce.instance.query( "Select Id,Name,Body from ApexClass where NamespacePrefix=null")
   chunking_size = 20
@@ -172,7 +172,7 @@ task :compile_all do
 end
 
 task :run_all_tests do
-  store_environment_login
+  login
   all_apex_classes = Salesforce.instance.query( "Select Name from ApexClass where NamespacePrefix=null").map(&:Name)
   all_apex_classes.each_with_index do |cls_name, i|
     puts "Running #{cls_name}"
@@ -183,7 +183,7 @@ task :run_all_tests do
 end
 
 task :pull, [:file_names] do |t, args|
-  store_environment_login
+  login
   to_pull = args[:file_names]
   if !to_pull
     to_pull = readPackageXML
@@ -239,19 +239,7 @@ task :logout do
 end
 
 task :login, [:client, :environment] do |t, args|
-  client = args[:client]
-  environment = args[:environment]
-  data = YAML.load_file @logins_path
-  theClient = data["clients"][client]
-
-  if theClient && theClient[environment]
-    data["client"] = client
-    data["environment"] = environment
-
-    File.open(@logins_path, 'w') { |f| YAML.dump(data, f) }
-  else
-    puts "#{client} #{environment} does not exist"
-  end
+  login_as_user args[:client], args[:environment]
 end
 
 task :sfwho do
@@ -287,7 +275,7 @@ def get_creds( args )
 end
 
 def find_classes_unaccounted_for
-  store_environment_login
+  login
   all_apex_classes = []
   Salesforce.instance.query( "Select Name from ApexClass where NamespacePrefix=null").each { |pg|
     all_apex_classes.push( pg )
