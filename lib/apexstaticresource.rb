@@ -2,7 +2,7 @@ require_relative 'salesforce'
 require_relative 'apexbase'
 require 'mime/types'
 
-class ApexStaticResource
+class StaticResource
   include ApexBase
   attr_reader :body, :name, :folder, :content_type
 
@@ -31,10 +31,6 @@ class ApexStaticResource
     @content_type = options[:ContentType]
     @folder = 'staticresources'
     @name = options[:Name]
-  end
-
-  def type
-    "StaticResource"
   end
 
   def id

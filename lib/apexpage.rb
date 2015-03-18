@@ -15,10 +15,6 @@ class ApexPage
     return "page"
   end
 
-  def type
-    "ApexPage"
-  end
-
   def body
     if !@body
       pull

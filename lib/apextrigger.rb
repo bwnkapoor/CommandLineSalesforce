@@ -8,10 +8,6 @@ class ApexTrigger
     return '.trigger'
   end
 
-  def type
-    'ApexTrigger'
-  end
-
   def table_enum_or_id
     matches = @body.match Regexp.new "trigger[ ]+([A-Za-z0-9_]+)[ ]+on[ ]+([A-Za-z0-9_]+)", true
     if matches

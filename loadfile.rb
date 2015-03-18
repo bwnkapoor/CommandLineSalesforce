@@ -56,7 +56,7 @@ def apex_member_factory(file_name)
   elsif( type == ".trigger" )
     ApexTrigger
   elsif( type == ".resource" || File.dirname(whole_name).end_with?("staticresources") )
-    ApexStaticResource
+    StaticResource
   else
     raise "Not Supported Type #{type}"
   end

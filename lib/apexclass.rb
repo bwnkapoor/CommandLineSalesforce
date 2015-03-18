@@ -51,10 +51,6 @@ class ApexClass
     @name = options[:Name]
   end
 
-  def type
-    "ApexClass"
-  end
-
   def id
     if !@id
       definition = get_class_sf_instance.current_page

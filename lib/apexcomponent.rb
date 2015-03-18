@@ -16,10 +16,6 @@ class ApexComponent
     return "component"
   end
 
-  def type
-    "ApexComponent"
-  end
-
   def path
     folder.to_s + "/" + name.to_s + file_ext.to_s
   end
