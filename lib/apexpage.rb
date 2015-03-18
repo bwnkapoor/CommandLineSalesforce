@@ -15,13 +15,6 @@ class ApexPage
     return "page"
   end
 
-  def body
-    if !@body
-      pull
-    end
-    @body
-  end
-
   def initialize(options={})
     @body = options[:Markup]
     @name = options[:Name]

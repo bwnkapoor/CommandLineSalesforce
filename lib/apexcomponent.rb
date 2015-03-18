@@ -16,13 +16,6 @@ class ApexComponent
     return "component"
   end
 
-  def body
-    if !@body
-      pull
-    end
-    @body
-  end
-
   def attributes
     doc = Nokogiri::HTML body
     apex_attributes = doc.css "attribute"

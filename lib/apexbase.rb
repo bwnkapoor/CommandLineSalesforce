@@ -3,7 +3,7 @@ require 'yaml'
 module ApexBase
   SYMBOLIC_FILE_NAME = 'symbolic_table.yaml'
 
-  attr_reader :folder, :name, :body
+  attr_reader :folder, :name
 
   def load_from_local_file file_path
     file = File.open( file_path, 'r' )
@@ -20,6 +20,13 @@ module ApexBase
         @id = sf_instance.current_page[0].Id
       end
     end
+  end
+
+  def body
+    if !@body
+      pull
+    end
+    @body
   end
 
   def path
