@@ -38,22 +38,11 @@ class ApexPage
     pg_name_to_dependencies
   end
 
-  def pull
-    file_request = get_class_sf_instance()
-    cls = file_request.current_page[0]
-    if cls
-      @body = cls.Markup
-      @id = cls.Id
-    else
-      raise "Page Does not exist #{@name}"
-    end
-  end
-
   def self.all
     Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null")
   end
 
-  def get_class_sf_instance( searching_name=name )
+  def self.get_class_sf_instance( searching_name=name )
     Salesforce.instance.query("Select+Id,Name,Markup,SystemModstamp,NamespacePrefix+from+ApexPage+where+name=\'#{searching_name}\' and namespacePrefix=null")
   end
 

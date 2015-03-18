@@ -84,17 +84,6 @@ class ApexClass
     dependencies
   end
 
-  def pull
-    file_request = get_class_sf_instance
-    cls = file_request.current_page[0]
-    if cls
-      @body = cls.Body
-      @id = cls.Id
-    else
-      raise "Class DNE #{self.name}"
-    end
-  end
-
   def self.all
     Salesforce.instance.query( "Select Name from ApexClass where Namespaceprefix=null" )
   end
@@ -179,7 +168,7 @@ class ApexClass
    cls_member_id
   end
 
-  def get_class_sf_instance( searching_name=@name )
+  def self.get_class_sf_instance( searching_name=@name )
     Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexClass+where+name=\'#{searching_name}\' and NamespacePrefix=null")
   end
 

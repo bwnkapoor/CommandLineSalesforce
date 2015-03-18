@@ -51,18 +51,11 @@ class ApexComponent
     @id = options[:Id]
   end
 
-  def pull
-    file_request = get_class_sf_instance
-    cls = file_request.current_page[0]
-    @body = cls.Markup
-    @id = cls.Id
-  end
-
   def self.all
     Salesforce.instance.query("Select Name from ApexComponent where NamespacePrefix=null")
   end
 
-  def get_class_sf_instance( searching_name=name )
+  def self.get_class_sf_instance( searching_name=name )
     Salesforce.instance.query("Select+Id,Name,Markup,SystemModstamp,NamespacePrefix+from+ApexComponent+where+name=\'#{searching_name}\' and NamespacePrefix=null" )
   end
 

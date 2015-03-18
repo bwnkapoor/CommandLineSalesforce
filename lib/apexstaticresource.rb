@@ -33,18 +33,6 @@ class StaticResource
     @name = options[:Name]
   end
 
-  def pull
-    file_request = get_class_sf_instance
-    cls = file_request.current_page[0]
-    if cls
-      @content_type = cls.ContentType
-      @body = Salesforce.instance.sf_get_callout( cls.Body ).body
-      @id = cls.Id
-    else
-      raise "StaticResource DNE #{self.name}"
-    end
-  end
-
   def self.all
     Salesforce.instance.query("Select Name from StaticResource")
   end
@@ -68,7 +56,7 @@ class StaticResource
    cls_member_id
   end
 
-  def get_class_sf_instance( searching_name=@name )
+  def self.get_class_sf_instance( searching_name=@name )
     Salesforce.instance.metadata_query("Select+Id,Name,Body,ContentType+from+StaticResource+where+name=\'#{searching_name}\'")
   end
 end

@@ -2,7 +2,6 @@ require_relative 'apextestresults'
 
 class ApexTrigger
   include ApexBase
-  attr_reader :name, :folder, :id, :body
 
   def file_ext
     return '.trigger'
@@ -23,10 +22,6 @@ class ApexTrigger
     @name = options[:Name]
   end
 
-  def path
-    folder.to_s + "/" + name.to_s + file_ext.to_s
-  end
-
   # Dependencies currently are not supporting extends, implements and variables of the class
   def self.get_dependencies class_name
     dependencies = []
@@ -44,22 +39,11 @@ class ApexTrigger
     dependencies
   end
 
-  def pull
-    file_request = get_class_sf_instance
-    cls = file_request.current_page[0]
-    if cls
-      @body = cls.Body
-      @id = cls.Id
-    else
-      raise "Trigger DNE #{self.name}"
-    end
-  end
-
   def self.all
     Salesforce.instance.query("Select Name from ApexTrigger where NamespacePrefix=Null")
   end
 
-  def get_class_sf_instance( searching_name=name )
+  def self.get_class_sf_instance( searching_name=name )
     Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexTrigger+where+name=\'#{searching_name}\' and NamespacePrefix=null")
   end
 

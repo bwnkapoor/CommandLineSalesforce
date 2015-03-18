@@ -82,15 +82,45 @@ module ApexBase
       fileNames = type.all.map(&:Name)
     end
     fileNames.each do |file|
-      cls = type.new( {Name: file} )
       begin
         puts "Pulling #{file}"
-        cls.pull
-        classes.push cls
+        classes.push do_pull( type, file )
       rescue Exception=>e
         puts e.to_s
       end
     end
     classes
+  end
+
+  def self.do_pull type, name
+    file_request = type.get_class_sf_instance name
+    cls = file_request.current_page[0]
+    if cls
+      cls = type.new cls
+    else
+      raise "Class DNE #{self.name}"
+    end
+
+    cls
+  end
+
+  def self.apex_member_factory(file_name)
+    type = File.extname( file_name )
+    whole_name = file_name
+    file_name = File.basename file_name, File.extname(file_name)
+
+    if( type == ".cls" )
+      ApexClass
+    elsif( type == ".page" )
+      ApexPage
+    elsif( type == ".component" )
+      ApexComponent
+    elsif( type == ".trigger" )
+      ApexTrigger
+    elsif( type == ".resource" || File.dirname(whole_name).end_with?("staticresources") )
+      StaticResource
+    else
+      raise "Not Supported Type #{type}"
+    end
   end
 end
