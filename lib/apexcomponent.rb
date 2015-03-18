@@ -6,7 +6,7 @@ class ApexComponent
   include ApexBase
   include ApexMarkup
 
-  attr_reader :body, :name, :folder, :local_name
+  attr_reader :local_name
 
   def file_ext
     return '.component'
@@ -14,10 +14,6 @@ class ApexComponent
 
   def container_tag
     return "component"
-  end
-
-  def path
-    folder.to_s + "/" + name.to_s + file_ext.to_s
   end
 
   def body

@@ -45,10 +45,6 @@ class ApexPage
     pg_name_to_dependencies
   end
 
-  def path
-    folder.to_s + "/" + name.to_s + file_ext.to_s
-  end
-
   def pull
     file_request = get_class_sf_instance()
     cls = file_request.current_page[0]

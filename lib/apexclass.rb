@@ -7,7 +7,7 @@ require_relative 'salesforce_job'
 
 class ApexClass
   include ApexBase
-  attr_reader :name, :folder, :body, :local_name
+  attr_reader :local_name
 
   def file_ext
     return '.cls'
@@ -60,10 +60,6 @@ class ApexClass
     if( matches )
       return matches.captures[0]
     end
-  end
-
-  def path
-    folder.to_s + "/" + name.to_s + file_ext.to_s
   end
 
   # Dependencies currently are not supporting implements and variables of the class

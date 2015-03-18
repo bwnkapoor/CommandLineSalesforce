@@ -4,7 +4,7 @@ require 'mime/types'
 
 class StaticResource
   include ApexBase
-  attr_reader :body, :name, :folder, :content_type
+  attr_reader :content_type
 
   def file_ext
     ext = MIME::Types[@content_type]
@@ -31,10 +31,6 @@ class StaticResource
     @content_type = options[:ContentType]
     @folder = 'staticresources'
     @name = options[:Name]
-  end
-
-  def path
-    folder.to_s + "/" + name.to_s + file_ext.to_s
   end
 
   def pull
