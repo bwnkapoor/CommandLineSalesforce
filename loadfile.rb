@@ -32,7 +32,7 @@ def pull file_names
     file_name = File.basename file, File.extname(file)
     begin
       type = apex_member_factory( file )
-      member = type.pull( [file_name] )
+      member = ApexBase::pull( [file_name], type )
 
       files.concat( member )
     rescue Exception=>e

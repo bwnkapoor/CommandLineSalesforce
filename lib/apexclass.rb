@@ -114,22 +114,8 @@ class ApexClass
     end
   end
 
-  def self.pull fileNames
-    classes = []
-    puts "Pulling Classes"
-    if fileNames.length == 1 && fileNames[0] == "*"
-      fileNames = Salesforce.instance.query( "Select Name from ApexClass where Namespaceprefix=null" ).map(&:Name)
-    end
-    fileNames.each do |file|
-      cls = ApexClass.new( {Name: file} )
-      begin
-        cls.pull
-        classes.push cls
-      rescue Exception=>e
-        puts e.to_s
-      end
-    end
-    classes
+  def self.all
+    Salesforce.instance.query( "Select Name from ApexClass where Namespaceprefix=null" )
   end
 
   def self.dependencies class_names

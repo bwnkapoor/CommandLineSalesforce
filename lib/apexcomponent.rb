@@ -73,19 +73,8 @@ class ApexComponent
     @id = cls.Id
   end
 
-  def self.pull fileNames
-    components = []
-    puts "Pulling Components"
-    if fileNames.length == 1 && fileNames[0] == "*"
-      fileNames = Salesforce.instance.query("Select Name from ApexComponent where NamespacePrefix=null").map(&:Name)
-    end
-    fileNames.each do |file|
-      pg = ApexComponent.new( {Name: file} )
-      pg.pull
-      components.push pg
-    end
-
-    components
+  def self.all
+    Salesforce.instance.query("Select Name from ApexComponent where NamespacePrefix=null")
   end
 
   def get_class_sf_instance( searching_name=name )

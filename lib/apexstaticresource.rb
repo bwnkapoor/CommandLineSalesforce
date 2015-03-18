@@ -64,22 +64,8 @@ class ApexStaticResource
     end
   end
 
-  def self.pull fileNames
-    classes = []
-    puts "Pulling StaticResources"
-    if( fileNames.length == 1 && fileNames[0] == "*" )
-      fileNames = Salesforce.instance.query("Select Name from StaticResource").map(&:Name)
-    end
-    fileNames.each do |file|
-      cls = ApexStaticResource.new( {Name: file} )
-      begin
-        cls.pull
-        classes.push cls
-      rescue Exception=>e
-        puts e.to_s
-      end
-    end
-    classes
+  def self.all
+    Salesforce.instance.query("Select Name from StaticResource")
   end
 
   def save( metadataContainer )

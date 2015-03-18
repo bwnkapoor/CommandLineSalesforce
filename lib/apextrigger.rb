@@ -59,22 +59,8 @@ class ApexTrigger
     end
   end
 
-  def self.pull fileNames
-    classes = []
-    puts "Pulling Triggers"
-    if( fileNames.length == 1 && fileNames[0] == "*" )
-      fileNames = Salesforce.instance.query("Select Name from ApexTrigger where NamespacePrefix=Null").map(&:Name)
-    end
-    fileNames.each do |file|
-      cls = ApexTrigger.new( {Name: file} )
-      begin
-        cls.pull
-        classes.push cls
-      rescue Exception=>e
-        puts e.to_s
-      end
-    end
-    classes
+  def self.all
+    Salesforce.instance.query("Select Name from ApexTrigger where NamespacePrefix=Null")
   end
 
   def get_class_sf_instance( searching_name=name )

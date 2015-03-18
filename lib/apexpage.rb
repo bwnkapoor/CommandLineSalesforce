@@ -64,23 +64,8 @@ class ApexPage
     end
   end
 
-  def self.pull fileNames
-    pages = []
-    puts "Pulling Pages"
-    if( fileNames.length == 1 && fileNames[0] == "*" )
-      fileNames = Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null").map(&:Name)
-    end
-    fileNames.each do |file|
-      pg = ApexPage.new( {Name: file} )
-      begin
-        pg.pull
-        pages.push pg
-      rescue Exception=>e
-        puts e.to_s
-      end
-    end
-
-    pages
+  def self.all
+    Salesforce.instance.query("Select Name from ApexPage where NamespacePrefix=null")
   end
 
   def get_class_sf_instance( searching_name=name )

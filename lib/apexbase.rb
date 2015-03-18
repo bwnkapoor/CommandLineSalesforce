@@ -61,4 +61,23 @@ module ApexBase
     end
     symbolic_link
   end
+
+  def self.pull fileNames, type
+    classes = []
+    puts "Pulling #{type}"
+    if fileNames.length == 1 && fileNames[0] == "*"
+      fileNames = type.all.map(&:Name)
+    end
+    fileNames.each do |file|
+      cls = type.new( {Name: file} )
+      begin
+        puts "Pulling #{file}"
+        cls.pull
+        classes.push cls
+      rescue Exception=>e
+        puts e.to_s
+      end
+    end
+    classes
+  end
 end
