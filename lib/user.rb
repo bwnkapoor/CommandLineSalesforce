@@ -4,10 +4,10 @@ require 'byebug'
 module User
   LOGIN_PATH = '/home/justin/buildTool/build_tool.yaml'
   class User
-    attr_reader :username, :client, :instance, :instance_url, :oauth_token
+    attr_reader :client, :instance, :instance_url, :oauth_token
 
     def initialize( fields={} )
-      @username = fields["username"]
+      #@username = fields["username"]
       @client, @instance = fields["client"], fields["instance"]
     end
 
@@ -21,6 +21,11 @@ module User
       @oauth_token = Salesforce.instance.restforce.options[:oauth_token]
       ENV["SF_INSTANCE_URL"] = @instance_url
       ENV["SF_OAUTH"] = @oauth_token
+    end
+
+    def username
+      data = YAML.load_file LOGIN_PATH
+      data["clients"][client][instance]["username"]
     end
 
     def to_hash

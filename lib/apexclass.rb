@@ -195,6 +195,7 @@ class ApexClass
   end
 
   def save( metadataContainer )
+    puts "Saving #{name}"
     if id
       cls_member_id = Salesforce.instance.restforce.create( "ApexClassMember",
                                                                Body: body,

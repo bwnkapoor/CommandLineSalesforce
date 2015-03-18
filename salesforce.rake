@@ -61,7 +61,8 @@ end
 
 task :active do
   running_user = User::who_am_i
-  puts "#{running_user.username.to_s},#{running_user.instance.to_s}"
+  puts "#{running_user.client.to_s},#{running_user.instance.to_s}"
+  puts "session: #{running_user.oauth_token}"
 end
 
 task :creds, [:client, :environment] do |t, args|
