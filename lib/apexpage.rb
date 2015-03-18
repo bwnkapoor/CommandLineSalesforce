@@ -5,7 +5,7 @@ require_relative 'apexmarkup'
 class ApexPage
   include ApexBase
   include ApexMarkup
-  attr_reader :name, :folder, :id, :local_name
+  attr_reader :name, :folder, :local_name
 
   def file_ext
     return '.page'

@@ -7,7 +7,7 @@ require_relative 'salesforce_job'
 
 class ApexClass
   include ApexBase
-  attr_reader :name, :folder, :id, :body, :local_name
+  attr_reader :name, :folder, :body, :local_name
 
   def file_ext
     return '.cls'
@@ -49,17 +49,6 @@ class ApexClass
     @test_results = options[:TestResults]
     @folder = 'classes'
     @name = options[:Name]
-  end
-
-  def id
-    if !@id
-      definition = get_class_sf_instance.current_page
-      if !definition.empty?
-        @id = definition[0].Id
-      end
-    end
-
-    @id
   end
 
   def extends

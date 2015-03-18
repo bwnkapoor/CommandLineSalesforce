@@ -6,7 +6,7 @@ class ApexComponent
   include ApexBase
   include ApexMarkup
 
-  attr_reader :body, :name, :folder, :id, :local_name
+  attr_reader :body, :name, :folder, :local_name
 
   def file_ext
     return '.component'

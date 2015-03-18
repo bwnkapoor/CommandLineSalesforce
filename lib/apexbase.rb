@@ -21,13 +21,20 @@ module ApexBase
   end
 
   def delete
-    if !@id
-      @id = get_class_sf_instance.current_page[0].Id
-    end
-    id = @id
-    url = "/services/data/v33.0/sobjects/#{type}/#{id}"
+    url = "/services/data/v33.0/sobjects/#{self.class}/#{id}"
     res = Salesforce.instance.sf_delete_callout( url )
     puts res.response
+  end
+
+  def id
+    if !@id
+      definition = get_class_sf_instance.current_page
+      if !definition.empty?
+        @id = definition[0].Id
+      end
+    end
+
+    @id
   end
 
   def log_symbolic_link

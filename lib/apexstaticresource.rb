@@ -33,17 +33,6 @@ class StaticResource
     @name = options[:Name]
   end
 
-  def id
-    if !@id
-      definition = get_class_sf_instance.current_page
-      if !definition.empty?
-        @id = definition[0].Id
-      end
-    end
-
-    @id
-  end
-
   def path
     folder.to_s + "/" + name.to_s + file_ext.to_s
   end
