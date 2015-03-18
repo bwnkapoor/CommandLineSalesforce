@@ -78,7 +78,6 @@ class ApexStaticResource
                       )
 
    else
-      puts "not built yet"
       cls_member_id = Salesforce.instance.restforce.create( "StaticResource" ,
                                                             Name: name,
                                                             Body: Base64.encode64(body).force_encoding("utf-8"),

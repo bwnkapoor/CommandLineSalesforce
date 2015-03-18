@@ -135,13 +135,9 @@ class ApexClass
 
   def run_test_async
     puts "Running the tests...For class asynch\"#{name}\""
-    if !@id
-      cls = get_class_sf_instance
-      @id = cls.current_page[0]["Id"]
-    end
 
     begin
-      job = SalesforceJob.run_tests_asynchronously @id
+      job = SalesforceJob.run_tests_asynchronously id
     rescue Exception=>e
       raise "the job is already running #{e}"
     end

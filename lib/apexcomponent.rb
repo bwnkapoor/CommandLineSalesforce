@@ -82,10 +82,22 @@ class ApexComponent
   end
 
   def save( metadataContainer )
-    cls_member_id = Salesforce.instance.restforce.create( "ApexComponentMember", Body: body,
-                                                             MetadataContainerId: metadataContainer.id,
-                                                             ContentEntityId: id
-                                            )
+    if id
+      cls_member_id = Salesforce.instance.restforce.create( "ApexComponentMember", Body: body,
+                                                               MetadataContainerId: metadataContainer.id,
+                                                               ContentEntityId: id
+                                              )
+    else
+      cls_member_id = Salesforce.instance.sf_post_callout( "/services/data/v33.0/sobjects/ApexComponent" , {
+
+                                                              body: {
+                                                                 "Name"=>name,
+                                                                 "Markup"=>body,
+                                                                 "MasterLabel"=>name
+                                                              }.to_json
+                                                           }
+                                              )
+    end
     puts cls_member_id
   end
 end
