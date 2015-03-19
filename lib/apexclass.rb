@@ -1,7 +1,9 @@
 require 'yaml'
+require 'io/console'
+require 'byebug'
+
 require_relative 'salesforce'
 require_relative 'apexbase'
-require 'byebug'
 require_relative 'apextestresults'
 require_relative 'salesforce_job'
 
@@ -179,6 +181,14 @@ class ApexClass
       return test_results.num_tests_ran > 0
     end
     raise SystemCallError, "There are no test results so it is difficult to determine"
+  end
+
+  def self.create_from_template template
+    content = template.read
+    puts "class name:"
+    name = $stdin.gets.chomp
+    content = content.sub("@className@", name)
+    content
   end
 
 end

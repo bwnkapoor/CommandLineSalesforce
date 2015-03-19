@@ -150,4 +150,11 @@ module ApexBase
       raise "Not Supported Type #{type}"
     end
   end
+
+  def self.create file_type
+    type = self.apex_member_factory file_type
+    file = File.open("/home/justin/.rake/templates/#{type}", "r")
+    content = type.create_from_template file
+    puts content
+  end
 end

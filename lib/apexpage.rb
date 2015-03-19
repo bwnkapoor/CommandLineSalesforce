@@ -65,4 +65,8 @@ class ApexPage
     end
     puts cls_member_id
   end
+
+  def self.create_from_template template
+    content = template.read
+  end
 end

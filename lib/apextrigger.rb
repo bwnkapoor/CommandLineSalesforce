@@ -67,4 +67,15 @@ class ApexTrigger
     end
     puts cls_member_id
   end
+
+  def self.create_from_template template
+    content = template.read
+    puts "Trigger name"
+    name = $stdin.gets.chomp
+    puts "sObject: "
+    sobject = $stdin.gets.chomp
+    content = content.sub("@objectName@", name)
+    content = content.sub("@sObject@", sobject)
+    content
+  end
 end
