@@ -9,7 +9,7 @@ def do_watch
   FileWatcher.new(".").watch(0.25) do |filename, event|
     if !filename.end_with? "~"
       begin
-        type = apex_member_factory filename
+        type = ApexBase::apex_member_factory filename
         if type
           puts "The time is #{Time.now}"
           basename = File.basename(filename, File.extname(filename))
@@ -49,7 +49,6 @@ def do_watch
           puts "-----------------------------------------------------------"
         end
       rescue Exception=>e
-
       end
     end
   end
