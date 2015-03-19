@@ -55,9 +55,9 @@ module ApexBase
   end
 
   def write_symbolic_links
-    FileUtils.mkdir_p file.symbolic_folder
+    FileUtils.mkdir_p symbolic_folder
     begin
-      FileUtils.ln_s "#{file.path}", "#{file.symbolic_path}"
+      FileUtils.ln_s "#{path}", "#{symbolic_path}"
     rescue Errno::EEXIST
 
     end
@@ -172,5 +172,6 @@ module ApexBase
     name = $stdin.gets.chomp
     member = type.create_from_template file, name
     member.write_file
+    member.write_symbolic_links
   end
 end
