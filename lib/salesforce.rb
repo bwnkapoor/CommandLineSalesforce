@@ -14,14 +14,14 @@ class Salesforce
       @restforce = Restforce.tooling :client_secret=>ENV["SF_CLIENT_SECRET"],
                                      :client_id=>ENV["SF_CLIENT_ID"],
                                      :username=>ENV["SF_USERNAME"],
-                                     :password=>ENV["SF_PASSWORD"],
+                                     :password=>ENV["SF_PASSWORD"].to_s + ENV["SF_SECURITY_TOKEN"].to_s,
                                      :api_version=>SF_API_VERSION,
                                      :host=>host
 
       @sf = Restforce.new :client_secret=>ENV["SF_CLIENT_SECRET"],
                                      :client_id=>ENV["SF_CLIENT_ID"],
                                      :username=>ENV["SF_USERNAME"],
-                                     :password=>ENV["SF_PASSWORD"],
+                                     :password=>ENV["SF_PASSWORD"].to_s + ENV["SF_SECURITY_TOKEN"].to_s,
                                      :api_version=>SF_API_VERSION,
                                      :host=>host
     else

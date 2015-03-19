@@ -1,5 +1,7 @@
 require 'yaml'
+require 'io/console'
 require 'byebug'
+require 'fileutils'
 
 module User
   LOGIN_PATH = '/home/justin/buildTool/build_tool.yaml'
@@ -7,7 +9,6 @@ module User
     attr_reader :client, :instance, :instance_url, :oauth_token
 
     def initialize( fields={} )
-      #@username = fields["username"]
       @client, @instance = fields["client"], fields["instance"]
     end
 
@@ -18,11 +19,13 @@ module User
       ENV["SF_PASSWORD"] = password
       ENV["SF_CLIENT_SECRET"] = client_secret
       ENV["SF_CLIENT_ID"] = client_id
+      ENV["SF_SECURITY_TOKEN"] = security_token
       ENV["SF_HOST"] = is_production ? "login.salesforce.com" : "test.salesforce.com"
       @instance_url = Salesforce.instance.restforce.instance_url
       @oauth_token = Salesforce.instance.restforce.options[:oauth_token]
       ENV["SF_INSTANCE_URL"] = @instance_url
       ENV["SF_OAUTH"] = @oauth_token
+      FileUtils.mkdir_p "/home/justin/work/#{local_root_directory}"
     end
 
     def username
@@ -39,6 +42,11 @@ module User
     def client_id
       data = YAML.load_file LOGIN_PATH
       data["client_id"].to_s
+    end
+
+    def security_token
+      data = YAML.load_file LOGIN_PATH
+      data["clients"][client][instance]["security_token"]
     end
 
     def client_secret
@@ -117,6 +125,34 @@ module User
       running_user = who_am_i
     end
     running_user
+  end
+
+  def self.create_new_user client, instance
+    if client && instance
+      data = YAML.load_file LOGIN_PATH
+      puts "Username:"
+      username = $stdin.gets.chomp
+      puts "Password:"
+      password = $stdin.gets.chomp
+      puts "is production?"
+      is_production = $stdin.gets.chomp
+      if !data["clients"]
+        data["clients"] = {}
+      end
+      if !data["clients"][client]
+        data["clients"][client] = {}
+      end
+      data["clients"][client][instance] = {
+        "username"=>username,
+        "password"=>password,
+        "local_root"=>"#{client}/codebase/#{instance}",
+        "is_production"=>is_production == 'true'
+      }
+      File.open( LOGIN_PATH, 'w' ){ |f| YAML.dump(data, f) }
+    else
+      raise "You must enter a client and instance"
+    end
+
   end
 
   def self.who_am_i

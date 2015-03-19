@@ -13,6 +13,10 @@ task :monitor,[:client,:instance] do |t,args|
   do_watch
 end
 
+task :create_client,[:client, :instance] do |t,args|
+  User::create_new_user args[:client], args[:instance]
+end
+
 task :clients_working_directory,[:client,:instance] do |t,args|
   usr = User.get_credentials args[:client], args[:instance]
   puts "/home/justin/work/#{usr.local_root_directory}"
