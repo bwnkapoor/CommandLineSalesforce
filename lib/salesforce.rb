@@ -60,6 +60,14 @@ class Salesforce
     @restforce.get( "/services/data/v#{SF_API_VERSION}/tooling/query/?q=#{str_query}" ).body
   end
 
+  def create( type, options={} )
+    sf_post_callout "/services/data/v#{SF_API_VERSION}/sobjects/#{type}", options
+  end
+
+  def metadata_create( type, options={} )
+    sf_post_callout "/services/data/v#{SF_API_VERSION}/tooling/sobjects/#{type}", options
+  end
+
   def run_tests_synchronously( classes )
     classes = if classes.class == Array then classes else [classes] end
     classes = classes.join(",")

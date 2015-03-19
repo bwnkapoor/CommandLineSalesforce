@@ -7,13 +7,23 @@ class StaticResource
   attr_reader :content_type
 
   def file_ext
+    ".resource"
+  end
+
+  def symbolic_ext
     ext = MIME::Types[@content_type]
     if ext.first
       ext = ext.first.extensions.first
     else
-      ext = "resource"
+      ext = ".resource"
     end
     return ".#{ext}"
+  end
+
+  def body
+    if @body
+      Salesforce.instance.sf_get_callout @body
+    end
   end
 
   def content_type

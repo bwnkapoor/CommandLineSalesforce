@@ -11,14 +11,13 @@ require_relative 'lib/apexstaticresource'
 require_relative 'lib/apextrigger'
 
 
-
 def write files
+  running_user = User.get_credentials
+  base_dir = running_user.local_root_directory
+  if !base_dir then base_dir = '.' end
   files.each do |sf_file|
-    sf_file.find_symbol_local_link
     FileUtils.mkdir_p sf_file.folder
-    f = File.new( sf_file.path, "w" )
-    f.write( sf_file.body )
-    f.close
+    File.open( sf_file.path.to_s, "w" ){ |f| f.write( sf_file.body ) }
   end
 end
 
@@ -39,7 +38,19 @@ def pull file_names
     end
   end
   write files
+  create_links files
   puts "done"
+end
+
+def create_links files
+  files.each do |file|
+    FileUtils.mkdir_p file.symbolic_folder
+    begin
+      FileUtils.ln_s "#{file.path}", "#{file.symbolic_path}"
+    rescue Errno::EEXIST
+
+    end
+  end
 end
 
 def apex_member_factory(file_name)
@@ -76,7 +87,7 @@ def push files_paths_to_save
       puts cls.save( container )
       puts "saving..."
     rescue Exception=>e
-      puts "Failed to save #{to_save_path}"
+      puts "Failed to save #{to_save_path} #{e}"
     end
   end
 

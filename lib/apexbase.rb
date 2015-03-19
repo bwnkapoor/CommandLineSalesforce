@@ -2,8 +2,9 @@ require 'yaml'
 
 module ApexBase
   SYMBOLIC_FILE_NAME = 'symbolic_table.yaml'
+  BASE_DIR = "/home/justin/work"
 
-  attr_reader :folder, :name
+  attr_reader :name
 
   def load_from_local_file file_path
     file = File.open( file_path, 'r' )
@@ -13,6 +14,11 @@ module ApexBase
     @local_name = file_path
     base_file_name = File.basename file, File.extname(file)
     @name = base_file_name
+  end
+
+  def folder
+    instance_dir = User.session_user.local_root_directory
+    BASE_DIR + "/#{instance_dir}/#{@folder}"
   end
 
   def body
@@ -34,7 +40,7 @@ module ApexBase
 
   def id
     if !@id
-      definition = get_class_sf_instance.current_page
+      definition = self.class.get_class_sf_instance(name).current_page
       if !definition.empty?
         @id = definition[0].Id
       end
@@ -43,13 +49,34 @@ module ApexBase
     @id
   end
 
+  def loaded_symbolic
+    links = load_symbol_links
+    if links && links[self.class] && links[self.class][name]
+      links[self.class][name]
+    else
+      nil
+    end
+  end
+
+  def symbolic_folder
+    if loaded_symbolic then loaded_symbolic["local_name"] else @folder end
+  end
+
+  def symbolic_path
+    symbolic_folder.to_s + "/" + name.to_s + symbolic_ext.to_s
+  end
+
+  def symbolic_ext
+    file_ext
+  end
+
   def log_symbolic_link
     symbolic_link = load_symbol_links
     if !symbolic_link[self.class]
       symbolic_link[self.class] = {}
     end
     symbolic_link[self.class][@name] = {
-      "local_name"=>@local_name,
+      "local_name"=>File.dirname( @local_name ),
       "id"=>@id
     }
     File.open(SYMBOLIC_FILE_NAME, 'w'){ |f| f.write YAML.dump symbolic_link }

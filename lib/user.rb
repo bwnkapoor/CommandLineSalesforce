@@ -12,6 +12,8 @@ module User
     end
 
     def login
+      ENV["SF_INSTANCE"] = instance
+      ENV["SF_CLIENT"] = client
       ENV["SF_USERNAME"] = username
       ENV["SF_PASSWORD"] = password
       ENV["SF_CLIENT_SECRET"] = client_secret
@@ -91,6 +93,16 @@ module User
           puts "#{client},#{sandbox}"
         end
       end
+    end
+  end
+
+  def self.session_user
+    if ENV["SF_INSTANCE"]
+      instance = ENV["SF_INSTANCE"]
+      client = ENV["SF_CLIENT"]
+      get_credentials client, instance
+    else
+      get_credentials
     end
   end
 

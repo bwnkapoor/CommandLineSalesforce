@@ -149,14 +149,15 @@ class ApexClass
   def save( metadataContainer )
     puts "Saving #{name}"
     if id
-      cls_member_id = Salesforce.instance.restforce.create( "ApexClassMember",
-                                                               Body: body,
-                                                               MetadataContainerId: metadataContainer.id,
-                                                               ContentEntityId: id
-                                              )
-
+      results = Salesforce.instance.metadata_create( "ApexClassMember", {
+                                                               body: {
+                                                                 Body: body,
+                                                                 MetadataContainerId: metadataContainer.id,
+                                                                 ContentEntityId: id
+                                                               }.to_json
+                                              })
    else
-      cls_member_id = Salesforce.instance.sf_post_callout( "/services/data/v33.0/sobjects/ApexClass" , {
+      results = Salesforce.instance.metadata_create( self.class.name, {
 
                                                               body: {
                                                                  "Name"=>name,
@@ -164,8 +165,9 @@ class ApexClass
                                                               }.to_json
                                                            }
                                               )
+     puts results.to_s
    end
-   cls_member_id
+   results["id"]
   end
 
   def self.get_class_sf_instance( searching_name=@name )

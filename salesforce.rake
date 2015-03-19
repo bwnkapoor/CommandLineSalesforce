@@ -8,9 +8,14 @@ require_relative 'lib/readpackagexml'
 require_relative 'lib/file_watcher_task'
 require_relative 'lib/user'
 
-task :monitor do
-  User::login
+task :monitor,[:client,:instance] do |t,args|
+  User::login args[:client], args[:instance]
   do_watch
+end
+
+task :clients_working_directory,[:client,:instance] do |t,args|
+  usr = User.get_credentials args[:client], args[:instance]
+  puts "/home/justin/work/#{usr.local_root_directory}"
 end
 
 task :log_symbolic_links do
