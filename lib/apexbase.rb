@@ -54,6 +54,15 @@ module ApexBase
     File.open( path, 'w' ){ |f| f.write body }
   end
 
+  def write_symbolic_links
+    FileUtils.mkdir_p file.symbolic_folder
+    begin
+      FileUtils.ln_s "#{file.path}", "#{file.symbolic_path}"
+    rescue Errno::EEXIST
+
+    end
+  end
+
   def loaded_symbolic
     links = load_symbol_links
     if links && links[self.class] && links[self.class][name]

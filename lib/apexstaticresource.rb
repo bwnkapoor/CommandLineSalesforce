@@ -1,4 +1,5 @@
 require_relative 'salesforce'
+require 'io/console'
 require_relative 'apexbase'
 require 'mime/types'
 
@@ -21,9 +22,10 @@ class StaticResource
   end
 
   def body
-    if @body
-      Salesforce.instance.sf_get_callout @body
+    if @body && !@actual_body
+      @actual_body = Salesforce.instance.sf_get_callout @body
     end
+    @actual_body
   end
 
   def content_type
@@ -39,6 +41,7 @@ class StaticResource
     @full_name = options[:FullName]
     @test_results = options[:TestResults]
     @content_type = options[:ContentType]
+    @actual_body = options[:ActualBody]
     @folder = 'staticresources'
     @name = options[:Name]
   end
@@ -69,4 +72,15 @@ class StaticResource
   def self.get_class_sf_instance( searching_name=@name )
     Salesforce.instance.metadata_query("Select+Id,Name,Body,ContentType+from+StaticResource+where+name=\'#{searching_name}\'")
   end
+
+  def self.create_from_template template, name
+    puts "The actual extension type"
+    extension_type = $stdin.gets.chomp
+    self.new( {
+                 Name: name,
+                 ActualBody: template.read,
+                 FullName: name + "." + extension_type
+            } )
+  end
+
 end

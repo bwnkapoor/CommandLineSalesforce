@@ -1,5 +1,4 @@
 require 'yaml'
-require 'io/console'
 require 'byebug'
 
 require_relative 'salesforce'

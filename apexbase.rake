@@ -23,3 +23,9 @@ namespace :apexcomponent do
     ApexBase.create "template.component"
   end
 end
+
+namespace :staticresource do
+  task :new do
+    ApexBase.create "template.resource"
+  end
+end
