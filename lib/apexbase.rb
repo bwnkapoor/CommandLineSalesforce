@@ -49,6 +49,11 @@ module ApexBase
     @id
   end
 
+  def write_file
+    FileUtils.mkdir_p folder
+    File.open( path, 'w' ){ |f| f.write body }
+  end
+
   def loaded_symbolic
     links = load_symbol_links
     if links && links[self.class] && links[self.class][name]
@@ -154,7 +159,9 @@ module ApexBase
   def self.create file_type
     type = self.apex_member_factory file_type
     file = File.open("/home/justin/.rake/templates/#{type}", "r")
-    content = type.create_from_template file
-    puts content
+    puts "file name:"
+    name = $stdin.gets.chomp
+    member = type.create_from_template file, name
+    member.write_file
   end
 end

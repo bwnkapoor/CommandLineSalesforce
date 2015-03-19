@@ -79,7 +79,8 @@ class ApexComponent
     puts cls_member_id
   end
 
-  def self.create_from_template template
+  def self.create_from_template template, name
     content = template.read
+    self.new( {Markup: content, Name: name} )
   end
 end

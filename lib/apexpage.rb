@@ -5,7 +5,7 @@ require_relative 'apexmarkup'
 class ApexPage
   include ApexBase
   include ApexMarkup
-  attr_reader :name, :folder, :local_name
+  attr_reader :name, :local_name
 
   def file_ext
     return '.page'
@@ -66,7 +66,8 @@ class ApexPage
     puts cls_member_id
   end
 
-  def self.create_from_template template
+  def self.create_from_template template, name
     content = template.read
+    self.new( {Markup: content, Name: name} )
   end
 end

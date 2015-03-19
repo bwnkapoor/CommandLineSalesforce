@@ -1,0 +1,4 @@
+trigger @objectName@ on @sObject@( after update )
+{
+
+}

@@ -183,12 +183,11 @@ class ApexClass
     raise SystemCallError, "There are no test results so it is difficult to determine"
   end
 
-  def self.create_from_template template
+  def self.create_from_template template, name
     content = template.read
-    puts "class name:"
-    name = $stdin.gets.chomp
     content = content.sub("@className@", name)
     content
+    self.new( {Name: name, Body: content} )
   end
 
 end

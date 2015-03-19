@@ -2,6 +2,7 @@ require 'byebug'
 require 'fileutils'
 require 'date'
 require 'yaml'
+require_relative 'lib/apexbase'
 require_relative 'lib/containerasyncrequest'
 require_relative 'lib/metadatacontainer'
 require_relative 'lib/apexclass'
@@ -30,7 +31,7 @@ def pull file_names
     type = File.extname( file )
     file_name = File.basename file, File.extname(file)
     begin
-      type = apex_member_factory( file )
+      type = ApexBase::apex_member_factory( file )
       member = ApexBase::pull( [file_name], type )
 
       files.concat( member )
@@ -53,26 +54,6 @@ def create_links files
   end
 end
 
-def apex_member_factory(file_name)
-  type = File.extname( file_name )
-  whole_name = file_name
-  file_name = File.basename file_name, File.extname(file_name)
-
-  if( type == ".cls" )
-    ApexClass
-  elsif( type == ".page" )
-    ApexPage
-  elsif( type == ".component" )
-    ApexComponent
-  elsif( type == ".trigger" )
-    ApexTrigger
-  elsif( type == ".resource" || File.dirname(whole_name).end_with?("staticresources") )
-    StaticResource
-  else
-    raise "Not Supported Type #{type}"
-  end
-end
-
 def push files_paths_to_save
   puts 'pushing...'
   container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
@@ -80,7 +61,7 @@ def push files_paths_to_save
   if files_paths_to_save.class != Array then files_paths_to_save = [files_paths_to_save] end
   files_paths_to_save.each do |to_save_path|
     begin
-      type = apex_member_factory( to_save_path )
+      type = ApexBase::apex_member_factory( to_save_path )
       base_name = File.basename(to_save_path, File.extname(to_save_path))
       cls = type.new({Name: base_name })
       cls.load_from_local_file(to_save_path)

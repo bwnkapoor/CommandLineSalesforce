@@ -7,6 +7,7 @@ require_relative 'dependencies'
 require_relative 'lib/readpackagexml'
 require_relative 'lib/file_watcher_task'
 require_relative 'lib/user'
+require_relative 'lib/apexbase'
 
 task :monitor,[:client,:instance] do |t,args|
   User::login args[:client], args[:instance]
@@ -26,7 +27,7 @@ task :log_symbolic_links do
   User::login
   Find.find('.') do |file|
     begin
-      cls = apex_member_factory(file)
+      cls = ApexBase::apex_member_factory(file)
       file_name = File.basename file, File.extname(file)
       cls = cls.new({Name: file_name})
       cls.load_from_local_file file
@@ -50,7 +51,7 @@ end
 task :delete, [:file_path] do |t,args|
   User::login
   file_name = args[:file_path]
-  member = apex_member_factory(file_name)
+  member = ApexBase::apex_member_factory(file_name)
   type = File.extname( file_name )
   file_name = File.basename file_name, File.extname(file_name)
   to_delete = member.new( {Name: file_name} )
