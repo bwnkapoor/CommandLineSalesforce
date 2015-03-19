@@ -1,6 +1,7 @@
 require_relative 'salesforce'
 require 'io/console'
 require_relative 'apexbase'
+require 'base64'
 require 'mime/types'
 
 class StaticResource
@@ -60,10 +61,13 @@ class StaticResource
                       )
 
    else
-      cls_member_id = Salesforce.instance.restforce.create( "StaticResource" ,
+      cls_member_id = Salesforce.instance.create( "StaticResource" , {
+                                                        body: {
                                                             Name: name,
                                                             Body: Base64.encode64(body).force_encoding("utf-8"),
                                                             ContentType: content_type
+                                                        }.to_json
+                                                  }
                        )
    end
    cls_member_id

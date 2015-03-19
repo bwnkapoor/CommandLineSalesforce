@@ -13,7 +13,7 @@ def do_watch
         if type
           puts "The time is #{Time.now}"
           basename = File.basename(filename, File.extname(filename))
-          cls = type.new({Name: basename})
+          cls = type.new({Name: basename, FullName: filename})
           if event == :new
             puts "Would you like to save this file to SFDC?"
             begin

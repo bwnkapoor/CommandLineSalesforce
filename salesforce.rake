@@ -86,7 +86,7 @@ task :force, [:client, :environment] do |t, args|
   if !client.is_production
     cmd += "-i=test "
   end
-  cmd += "-u=#{client.username} -p=#{client.password}"
+  cmd += "-u=#{client.username} -p=#{client.password}#{client.security_token}"
   system cmd
 end
 
