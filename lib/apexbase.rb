@@ -14,7 +14,7 @@ module ApexBase
     @local_name = file_path
     base_file_name = File.basename file, File.extname(file)
     @name = base_file_name
-    @actual_body = file.read
+    @actual_body = @body
   end
 
   def folder

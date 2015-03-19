@@ -54,7 +54,7 @@ class StaticResource
   def save( metadataContainer )
     if id
       cls_member_id = Salesforce.instance.restforce.update( "StaticResource",
-                                                               Body: Base64.encode64(body),
+                                                               Body: Base64.encode64(body).force_encoding("utf-8"),
                                                                Name: name,
                                                                Id: id
 
