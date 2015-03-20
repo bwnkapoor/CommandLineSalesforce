@@ -77,7 +77,7 @@ end
 
 task :creds, [:client, :environment] do |t, args|
   t = User::get_credentials args[:client], args[:environment]
-  puts "Username: #{t.username}\nPassword: #{t.password}"
+  puts "Username: #{t.username}\nPassword: #{t.password}\nSecurity Token: #{t.security_token}"
 end
 
 task :force, [:client, :environment] do |t, args|

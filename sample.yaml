@@ -1,0 +1,28 @@
+--- !ruby/object:WorkflowRule
+fields: !ruby/hash:Restforce::SObject
+  attributes: !ruby/hash:Restforce::Mash
+    type: WorkflowRule
+    url: "/services/data/v33.0/tooling/sobjects/WorkflowRule/01Q19000000CiuQEAS"
+  Id: 01Q19000000CiuQEAS
+  Metadata: !ruby/hash:Restforce::Mash
+    actions:
+    - !ruby/hash:Restforce::Mash
+      name: Set_Default_Effective_Date
+      type: FieldUpdate
+    booleanFilter: 
+    criteriaItems:
+    - !ruby/hash:Restforce::Mash
+      field: Contract_Special_Terms__c.Effective_Date__c
+      operation: equals
+      value: 
+      valueField: 
+    formula: 
+    urls: 
+    workflowTimeTriggers: []
+    active: true
+    description: 
+    triggerType: onCreateOrTriggeringUpdate
+  FullName: Contract_Special_Terms__c.Set Default Effective Date
+  Name: Set Default Effective Date
+  NamespacePrefix: 
+  TableEnumOrId: Contract_Special_Terms__c

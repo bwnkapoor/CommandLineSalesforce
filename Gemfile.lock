@@ -1,0 +1,50 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    byebug (3.5.1)
+      columnize (~> 0.8)
+      debugger-linecache (~> 1.2)
+      slop (~> 3.6)
+    columnize (0.9.0)
+    debugger-linecache (1.2.0)
+    faraday (0.9.1)
+      multipart-post (>= 1.2, < 3)
+    faraday_middleware (0.9.1)
+      faraday (>= 0.7.4, < 0.10)
+    filewatcher (0.4.0)
+      trollop (~> 2.0)
+    hashie (3.4.0)
+    httparty (0.13.3)
+      json (~> 1.8)
+      multi_xml (>= 0.5.2)
+    json (1.8.2)
+    mime-types (2.4.3)
+    mini_portile (0.6.2)
+    multi_xml (0.5.5)
+    multipart-post (1.2.0)
+    nokogiri (1.6.6.2)
+      mini_portile (~> 0.6.0)
+    restforce (1.5.1)
+      faraday (~> 0.9.0)
+      faraday_middleware (>= 0.8.8)
+      hashie (>= 1.2.0, < 4.0)
+      json (>= 1.7.5, < 1.9.0)
+    salesforce_bulk_api (0.0.11)
+      json
+      xml-simple
+    slop (3.6.0)
+    trollop (2.1.2)
+    xml-simple (1.1.5)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  byebug
+  filewatcher
+  httparty
+  json
+  mime-types
+  nokogiri
+  restforce
+  salesforce_bulk_api

@@ -68,6 +68,11 @@ class Salesforce
     sf_post_callout "/services/data/v#{SF_API_VERSION}/tooling/sobjects/#{type}", options
   end
 
+  def metadata_update( type, item_id, options={} )
+    url = "/services/data/v#{SF_API_VERSION}/tooling/sobjects/#{type}/#{item_id}"
+    sf_patch_callout url, options
+  end
+
   def run_tests_synchronously( classes )
     classes = if classes.class == Array then classes else [classes] end
     classes = classes.join(",")
@@ -82,6 +87,15 @@ class Salesforce
       "Content-Type"=>"application/json"
     }
     self.class.get url, options
+  end
+
+  def sf_patch_callout url, options={}
+    session_id = @session_id
+    options[:headers]={
+      "Authorization"=>"Bearer #{session_id}",
+      "Content-Type"=>"application/json"
+    }
+    self.class.patch url, options
   end
 
   def sf_post_callout( url, options={} )

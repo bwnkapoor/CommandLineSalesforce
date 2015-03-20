@@ -1,4 +1,5 @@
 require_relative 'lib/apexbase'
+require_relative 'lib/workflowrule'
 
 namespace :apexclass do
   task :new do
@@ -27,5 +28,13 @@ end
 namespace :staticresource do
   task :new do
     ApexBase.create "template.resource"
+  end
+end
+
+namespace :workflowrule do
+  task :pull,[:name] do |t, args|
+    User::login
+    workflow_rule = ApexBase.do_pull WorkflowRule,''
+    res = workflow_rule.save
   end
 end
