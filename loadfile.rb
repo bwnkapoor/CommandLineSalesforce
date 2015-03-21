@@ -74,29 +74,28 @@ def push files_paths_to_save
 
   asynch = ContainerAsyncRequest.new( container.id )
   deploy_id = asynch.save
-  results = nil
-  while !results || (results.State != 'Completed' && results.State != 'Failed')
-    puts "sleeping"
-    sleep(1)
-    results = Salesforce.instance.metadata_query "Select DeployDetails, State from ContainerAsyncRequest where id = \'#{deploy_id}\'"
-    results = results.current_page[0]
-  end
+  results = asynch.monitor_until_complete
 
-
-  has_errors = false
-  results.DeployDetails.allComponentMessages.each do |message|
-    fileName = message.fileName.to_s
-    if message.success then puts "Success" else puts "Oh No!" end
-    if !message.success
-      has_errors = true
-      puts message.problem.to_s
-      puts message.lineNumber.to_s
-      puts message.problemType.to_s
-      puts "For class: #{message.fileName}\n\n"
+  if results.State != "Error"
+    has_errors = false
+    results.DeployDetails.allComponentMessages.each do |message|
+      fileName = message.fileName.to_s
+      if message.success then puts "Success" else puts "Oh No!" end
+      if !message.success
+        has_errors = true
+        puts message.problem.to_s
+        puts message.lineNumber.to_s
+        puts message.problemType.to_s
+        puts "For class: #{message.fileName}\n\n"
+      end
     end
+
+    if !has_errors
+      puts "Saved"
+    end
+  else
+    puts "We have an unknown error"
   end
 
-  if !has_errors
-    puts "Saved"
-  end
+
 end

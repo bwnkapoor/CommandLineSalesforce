@@ -14,7 +14,7 @@ class ContainerAsyncRequest
 
   def monitor_until_complete
     results = nil
-    while !results || (results.State != 'Completed' && results.State != 'Failed')
+    while !results || (results.State != 'Completed' && results.State != 'Failed' && results.State != 'Error')
       puts "sleeping"
       sleep(1)
       results = Salesforce.instance.metadata_query "Select DeployDetails, State from ContainerAsyncRequest where id = \'#{@id}\'"

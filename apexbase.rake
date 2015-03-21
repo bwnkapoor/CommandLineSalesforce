@@ -11,6 +11,20 @@ namespace :apextrigger do
   task :new do
     ApexBase.create "template.trigger"
   end
+
+  task :deactivate,[:name] do |t,args|
+    User::login
+    inst = ApexTrigger.get_class_sf_instance(args[:name]).current_page[0]
+
+    trg = ApexTrigger.new( inst )
+    trg.metadata.status = 'inactive'
+    container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
+    container.save()
+    trg.save( container )
+    asynch = ContainerAsyncRequest.new( container.id )
+    deploy_id = asynch.save
+    asynch.monitor_until_complete
+  end
 end
 
 namespace :apexpage do

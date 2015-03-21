@@ -3,6 +3,8 @@ require_relative 'apextestresults'
 class ApexTrigger
   include ApexBase
 
+  attr_reader :metadata
+
   def file_ext
     return '.trigger'
   end
@@ -19,7 +21,13 @@ class ApexTrigger
     @id = options[:Id]
     @test_results = options[:TestResults]
     @folder = 'triggers'
-    @name = options[:Name]
+    @metadata = options[:Metadata]
+    if options[:EntityDefinitionId]
+      @name = options[:EntityDefinitionId]
+    else
+      @name = options[:Name]
+    end
+
   end
 
   # Dependencies currently are not supporting extends, implements and variables of the class
@@ -44,15 +52,21 @@ class ApexTrigger
   end
 
   def self.get_class_sf_instance( searching_name=name )
-    Salesforce.instance.query("Select+Id,Name,Body,BodyCrc,SystemModstamp,NamespacePrefix+from+ApexTrigger+where+name=\'#{searching_name}\' and NamespacePrefix=null")
+    Salesforce.instance.metadata_query("Select+Id,Metadata,EntityDefinitionId,Body,BodyCrc+from+ApexTrigger+where+EntityDefinitionId=\'#{searching_name}\'")
   end
 
   def save( metadataContainer )
     if( id )
-      cls_member_id = Salesforce.instance.restforce.create( "ApexTriggerMember", Body: body,
-                                                               MetadataContainerId: metadataContainer.id,
-                                                               ContentEntityId: id
-                                              )
+      puts_body = {Body: body,MetadataContainerId: metadataContainer.id,ContentEntityId: id}
+
+      if( metadata )
+        puts_body[:Metadata] = metadata
+      end
+
+      cls_member_id = Salesforce.instance.metadata_create( "ApexTriggerMember", {
+                                                               body: puts_body.to_json
+                                              })
+
     else
       cls_member_id = Salesforce.instance.sf_post_callout( "/services/data/v33.0/sobjects/ApexTrigger" , {
 
@@ -65,7 +79,8 @@ class ApexTrigger
                                               )
 
     end
-    puts cls_member_id
+    puts cls_member_id["id"]
+    cls_member_id["id"]
   end
 
   def self.create_from_template template, name
