@@ -1,5 +1,6 @@
 require_relative 'lib/apexbase'
 require_relative 'lib/workflowrule'
+require_relative 'lib/validationrule'
 
 namespace :apexclass do
   task :new do
@@ -50,5 +51,14 @@ namespace :workflowrule do
     User::login
     workflow_rule = ApexBase.do_pull WorkflowRule,''
     res = workflow_rule.save
+  end
+end
+
+namespace :validationrule do
+  task :pull,[:name] do |t, args|
+    User::login
+    validation_rule = ApexBase.do_pull ValidationRule,''
+    byebug
+    res = validation_rule.save
   end
 end
