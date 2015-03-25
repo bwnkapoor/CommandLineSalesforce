@@ -1,4 +1,6 @@
 require_relative 'apextestresults'
+require_relative 'apexbase'
+require_relative 'salesforce'
 
 class ApexTrigger
   include ApexBase

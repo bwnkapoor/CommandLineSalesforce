@@ -58,7 +58,6 @@ namespace :validationrule do
   task :pull,[:name] do |t, args|
     User::login
     validation_rule = ApexBase.do_pull ValidationRule,''
-    byebug
     res = validation_rule.save
   end
 end

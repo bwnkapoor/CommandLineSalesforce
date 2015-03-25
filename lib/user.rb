@@ -1,6 +1,5 @@
 require 'yaml'
 require 'io/console'
-require 'byebug'
 require 'fileutils'
 
 module User

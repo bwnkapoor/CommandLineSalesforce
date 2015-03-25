@@ -1,5 +1,4 @@
 require 'restforce'
-require 'byebug'
 require 'singleton'
 require 'httparty'
 

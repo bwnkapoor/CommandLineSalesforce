@@ -1,6 +1,5 @@
 require 'filewatcher'
 require_relative '../loadfile'
-require 'byebug'
 require 'io/console'
 require 'timeout'
 
