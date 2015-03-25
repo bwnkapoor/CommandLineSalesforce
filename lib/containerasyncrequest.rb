@@ -20,6 +20,7 @@ class ContainerAsyncRequest
       results = Salesforce.instance.metadata_query "Select DeployDetails, State from ContainerAsyncRequest where id = \'#{@id}\'"
       results = results.current_page[0]
     end
+    print results
     @results = results
   end
 

@@ -18,7 +18,7 @@ namespace :apextrigger do
     inst = ApexTrigger.get_class_sf_instance(args[:name]).current_page[0]
 
     trg = ApexTrigger.new( inst )
-    trg.metadata.status = 'inactive'
+    trg.metadata.status = 'Inactive'
     container = MetadataContainer.new( DateTime.now.to_time.to_i.to_s )
     container.save()
     trg.save( container )

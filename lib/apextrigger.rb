@@ -22,11 +22,7 @@ class ApexTrigger
     @test_results = options[:TestResults]
     @folder = 'triggers'
     @metadata = options[:Metadata]
-    if options[:EntityDefinitionId]
-      @name = options[:EntityDefinitionId]
-    else
-      @name = options[:Name]
-    end
+    @name = options[:Name]
 
   end
 
@@ -52,7 +48,7 @@ class ApexTrigger
   end
 
   def self.get_class_sf_instance( searching_name=name )
-    Salesforce.instance.metadata_query("Select+Id,Metadata,EntityDefinitionId,Body,BodyCrc+from+ApexTrigger+where+EntityDefinitionId=\'#{searching_name}\'")
+    Salesforce.instance.metadata_query("Select+Id,Name,Metadata,EntityDefinitionId,Body,BodyCrc+from+ApexTrigger+where+Name=\'#{searching_name}\'")
   end
 
   def save( metadataContainer )
@@ -60,7 +56,9 @@ class ApexTrigger
       puts_body = {Body: body,MetadataContainerId: metadataContainer.id,ContentEntityId: id}
 
       if( metadata )
+        metadata = Salesforce.instance.metadata_query("Select Metadata from ApexTrigger where Name = '#{name}'").current_page[0].Metadata
         puts_body[:Metadata] = metadata
+        metadata.status="Inactive"
       end
 
       cls_member_id = Salesforce.instance.metadata_create( "ApexTriggerMember", {
