@@ -87,11 +87,11 @@ ApexClass, ApexPage, ApexComponent, StaticResource, and ApexTrigger
 |  |--Account.trigger
 |  |--Opportunity.trigger
 |--StaticResources
-|  |--css
-|  |  |--ssomething.css
-|  |  |--somethingElse.css
-|  |--js
-|     |--pageA.js
-|     |--pageB.js
+   |--css
+   |  |--ssomething.css
+   |  |--somethingElse.css
+   |--js
+      |--pageA.js
+      |--pageB.js
 ```
 
