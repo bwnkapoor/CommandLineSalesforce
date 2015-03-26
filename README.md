@@ -91,7 +91,7 @@ ApexClass, ApexPage, ApexComponent, StaticResource, and ApexTrigger
 |  |  |--ssomething.css
 |  |  |--somethingElse.css
 |  |--js
-|  |  |--pageA.js
-|  |  |--pageB.js
+|     |--pageA.js
+|     |--pageB.js
 ```
 
