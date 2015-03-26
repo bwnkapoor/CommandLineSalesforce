@@ -1,5 +1,4 @@
 # CommandLineSalesforce
-CommandLineSalesforce
 
 Salesforce file structure is crappy, lets admit it.  We cannot create subpackages, seperate controllers from Models, and have an actual extension for our static resouces.
 
