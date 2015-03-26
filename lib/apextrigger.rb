@@ -58,9 +58,7 @@ class ApexTrigger
       puts_body = {Body: body,MetadataContainerId: metadataContainer.id,ContentEntityId: id}
 
       if( metadata )
-        metadata = Salesforce.instance.metadata_query("Select Metadata from ApexTrigger where Name = '#{name}'").current_page[0].Metadata
         puts_body[:Metadata] = metadata
-        metadata.status="Inactive"
       end
 
       cls_member_id = Salesforce.instance.metadata_create( "ApexTriggerMember", {
