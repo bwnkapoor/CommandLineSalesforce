@@ -4,6 +4,7 @@ require 'fileutils'
 
 module User
   LOGIN_PATH = '/home/justin/buildTool/build_tool.yaml'
+  ROOT_DIR = "/home/justin/work/"
   class User
     attr_reader :client, :instance, :instance_url, :oauth_token
 
@@ -24,7 +25,7 @@ module User
       @oauth_token = Salesforce.instance.restforce.options[:oauth_token]
       ENV["SF_INSTANCE_URL"] = @instance_url
       ENV["SF_OAUTH"] = @oauth_token
-      FileUtils.mkdir_p "/home/justin/work/#{local_root_directory}"
+      FileUtils.mkdir_p full_path
     end
 
     def username
@@ -56,6 +57,10 @@ module User
     def is_production
       data = YAML.load_file LOGIN_PATH
       data["clients"][client][instance]["is_production"]
+    end
+
+    def full_path
+      ROOT_DIR + local_root_directory.to_s
     end
 
     def local_root_directory
@@ -172,6 +177,7 @@ module User
         usr.login
         data["running_user"] = usr
         File.open(LOGIN_PATH, 'w') { |f| YAML.dump(data, f) }
+        usr
       else
         raise "#{client.to_s} #{environment.to_s} does not exist"
       end

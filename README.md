@@ -47,7 +47,7 @@ clients:
 
 You will need to make some changes to lib/User.rb
   1. The LOGIN_PATH will need to point to where you store your build_tool.yaml
-  2. User.login creates a local copy of our Salesforce instance.  Sorry this is hard-coded at the moment, change it point to the root where you would like to keep you salesforce instances.
+  2. the ROOT_DIR is the root of where the Salesforce files will be stored, files in this directory will match Salesforces file schema.  When a pull is done, files get stored in User.full_path
   
 Once you are finished you may begin to work.
 

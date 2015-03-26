@@ -1,6 +1,7 @@
 require 'io/console'
 require 'yaml'
 require 'find'
+require 'fileutils'
 
 require_relative 'loadfile'
 require_relative 'dependencies'
@@ -19,8 +20,11 @@ task :create_client,[:client, :instance] do |t,args|
 end
 
 task :clients_working_directory,[:client,:instance] do |t,args|
-  usr = User.get_credentials args[:client], args[:instance]
-  puts "/home/justin/work/#{usr.local_root_directory}"
+  usr = User::get_credentials args[:client], args[:instance]
+  if !Dir.exists?usr.full_path
+    FileUtils.mkdir_p usr.full_path
+  end
+  puts usr.full_path
 end
 
 task :log_symbolic_links do
