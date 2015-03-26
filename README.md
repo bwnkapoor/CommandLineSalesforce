@@ -69,7 +69,7 @@ rake log_symbolic_links
 You will end with a file called "symbolic_table.yaml", now when you rake pull it will know what directory to go to.
 
 Here is an example of what your file structure could look like.  Current support allows for saving 
-ApexClass, ApexPage, ApexComponent, StaticResource
+ApexClass, ApexPage, ApexComponent, StaticResource, and ApexTrigger
 ```
 |
 |--Controllers
