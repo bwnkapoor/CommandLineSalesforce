@@ -166,9 +166,12 @@ module ApexBase
     end
   end
 
-  def self.create file_type
+  def self.create file_type, template=nil
     type = self.apex_member_factory file_type
-    file = File.open("/home/justin/.rake/templates/#{type}", "r")
+    if !template
+      template = type
+    end
+    file = File.open("/home/justin/.rake/templates/#{template}", "r")
     puts "file name:"
     name = $stdin.gets.chomp
     member = type.create_from_template file, name

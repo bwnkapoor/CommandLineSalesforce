@@ -6,6 +6,10 @@ namespace :apexclass do
   task :new do
     ApexBase.create "template.cls"
   end
+
+  task :create_batch do
+    ApexBase.create "template.cls", "ApexBatch"
+  end
 end
 
 namespace :apextrigger do

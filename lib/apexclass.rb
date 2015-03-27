@@ -183,7 +183,7 @@ class ApexClass
 
   def self.create_from_template template, name
     content = template.read
-    content = content.sub("@className@", name)
+    content = content.gsub("@className@", name)
     content
     self.new( {Name: name, Body: content} )
   end

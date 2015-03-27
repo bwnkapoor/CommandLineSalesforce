@@ -1,0 +1,42 @@
+global class @className@ implements Database.Batchable<SObject>, Schedulable, Database.stateful
+{
+    global String query;
+    global String errors;
+    
+    public static final String QUERY_STRING = 'Select Id from Account';
+    
+    global @className@( String query )
+    {
+        this.query = query;
+        this.errors = '';
+    }
+
+    global database.querylocator start(Database.BatchableContext bc)
+    {
+        return Database.getQueryLocator( query );
+    }
+
+    global void execute(Database.BatchableContext bc, Sobject[] scope)
+    {
+    }
+
+    global void finish(Database.BatchableContext bc)
+    {
+        if ( errors != '' )
+        {
+            Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            mail.setTargetObjectId( UserInfo.getUserId() );
+            mail.saveAsActivity = false;
+            mail.setSubject('Error while executing @className@ Process');
+            mail.setPlainTextBody( errors );
+
+            Messaging.sendEmail( new Messaging.SingleEmailMessage[] { mail } );
+        }
+    }
+    
+    global void execute(SchedulableContext SC)
+    {                        
+        @className@ batch = new @className@( QUERY_STRING );
+        Database.executeBatch( batch );
+    } 
+}
