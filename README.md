@@ -2,10 +2,10 @@
 
 Salesforce file structure is crappy, lets admit it.  We cannot create subpackages, seperate controllers from Models, and have an actual extension for our static resouces.
 
-This project aims to resolve this problem, by allowing you to build your own filing system.
+This project aims to resolve this problem, by allowing you to build your own custom filing system.
 
 
-# Salesforce Directory Hierarchy
+**Salesforce Directory Hierarchy**
 ```
 |
 |--Classes
@@ -24,8 +24,9 @@ This project aims to resolve this problem, by allowing you to build your own fil
 |   |--SomePage.page
     |--AnotherPage.page
 ```
+Wouldn't you like to organize these files a little better?
 
-# Custom Directory Hierarchy
+**Custom Directory Hierarchy Example**
 ```
 |
 |--Controllers
@@ -51,14 +52,14 @@ This project aims to resolve this problem, by allowing you to build your own fil
       |--pageB.js
 ```
 
-To create a new login run
+To log-into salesforce you will need to create a user.
 
 ```
 rake user:new
 ```
 
 
-Here is how you would begin working on a project for a client.
+Now it's time to get to work
 ```
 mkdir my_clients_project
 cd my_clients_project
@@ -68,15 +69,12 @@ rake pull[TestingUtils.cls]
 rake save[classes/TestingUtils.cls]
 ```
 
-You may now begin to build your file structure.  Note, all static resources must exist in some directory within StaticResources in order to determine a file is actually a salesforce static resource.
-
-Once you have decided on a file structure you may run,
+Once you have pulled your files; you may move them to the desired file directory and execute.
 ```
 rake log_symbolic_links
 ```
-You will end with a file called "symbolic_table.yaml", now when you rake pull for a file, it will place the file in the directory you have choosen for that file.
+`Note, all static resources must exist within the base StaticResources directory in order to save the file again.`
 
-Here is an example of what your file structure could look like.  Current support allows for saving 
-ApexClass, ApexPage, ApexComponent, StaticResource, and ApexTrigger
+This will produce "symbolic_table.yaml". Now when you rake pull for a file, it will pull the file into your clients root directory and create a symbolic link in your expected directory.
 
-
+Current support allows for saving/pulling ApexClass, ApexPage, ApexComponent, StaticResource, and ApexTrigger
