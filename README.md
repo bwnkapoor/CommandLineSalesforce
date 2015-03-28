@@ -25,9 +25,7 @@ Here is an example of the Salesforce File Hierarchy from what a developer cares 
     |--AnotherPage.page
 ```
 
-Logging in to Salesforce is done via a file existing in
-~/buildTool/build_tool.yaml
-Below is an example of what build_tool.yaml would look like.
+Your salesforce credentials will be stored in a yaml file.  Set configurator.logins in config.rb to the location of the credentials file.  Below is an example of the salesforce credentials file you will need to running the rake task login.
 
 ```
 ---
@@ -35,7 +33,7 @@ client_secret: "..."
 client_id: "...."
 clients:
   your_client_name:
-    you_client_instance:
+    your_client_instance:
       username: username
       password: password
       local_root: client_name/codebase/staging/
@@ -45,28 +43,23 @@ clients:
       is_production: true/false
 ```
 
-You will need to make some changes to lib/User.rb
-  1. The LOGIN_PATH will need to point to where you store your build_tool.yaml
-  2. the ROOT_DIR is the root of where the Salesforce files will be stored, files in this directory will match Salesforces file schema.  When a pull is done, files get stored in User.full_path
-  
-Once you are finished you may begin to work.
-
+Here is how you would begin working on a project for a client.
 ```
-mkdir my_client_dir
-cd my_client_dir
+mkdir my_clients_project
+cd my_clients_project
 rake login[your_client_name,your_client_instance]
 rake pull[TestingUtils.cls]
 #rake pull without args can be used if a package.xml exists
 rake save[classes/TestingUtils.cls]
 ```
 
-You may then begin to build your file structure.  Note, all static resources must exist in some directory within StaticResources in order to determine a file is actually a salesforce static resource.
+You may now begin to build your file structure.  Note, all static resources must exist in some directory within StaticResources in order to determine a file is actually a salesforce static resource.
 
-Once you have decided on a file structure you like run,
+Once you have decided on a file structure you may run,
 ```
 rake log_symbolic_links
 ```
-You will end with a file called "symbolic_table.yaml", now when you rake pull it will know what directory to go to.
+You will end with a file called "symbolic_table.yaml", now when you rake pull for a file, it will place the file in the directory you have choosen for that file.
 
 Here is an example of what your file structure could look like.  Current support allows for saving 
 ApexClass, ApexPage, ApexComponent, StaticResource, and ApexTrigger
