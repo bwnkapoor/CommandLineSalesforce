@@ -5,7 +5,7 @@ Salesforce file structure is crappy, lets admit it.  We cannot create subpackage
 This project aims to resolve this problem, by allowing you to build your own filing system.
 
 
-Here is an example of the Salesforce File Hierarchy from what a developer cares about.
+Salesforce Directory Hierarchy
 ```
 |
 |--Classes
@@ -23,6 +23,32 @@ Here is an example of the Salesforce File Hierarchy from what a developer cares 
 |--Pages
 |   |--SomePage.page
     |--AnotherPage.page
+```
+
+Wouldn't you rather have something like this?
+```
+|
+|--Controllers
+|  |--SomeCtrl.cls
+|  |--OtherCtrl.cls
+|--Models
+|  |--OpportunityModel.cls
+|  |--AccountModel.cls
+|  |--LeadModel.cls
+|--Tests
+|  |--OppportunityModelTest.cls
+|  |--AccountModelTest.cls
+|  |--LeadModelTest.cls
+|--Triggers
+|  |--Account.trigger
+|  |--Opportunity.trigger
+|--StaticResources
+   |--css
+   |  |--ssomething.css
+   |  |--somethingElse.css
+   |--js
+      |--pageA.js
+      |--pageB.js
 ```
 
 To create a new login run
@@ -52,28 +78,5 @@ You will end with a file called "symbolic_table.yaml", now when you rake pull fo
 
 Here is an example of what your file structure could look like.  Current support allows for saving 
 ApexClass, ApexPage, ApexComponent, StaticResource, and ApexTrigger
-```
-|
-|--Controllers
-|  |--SomeCtrl.cls
-|  |--OtherCtrl.cls
-|--Models
-|  |--OpportunityModel.cls
-|  |--AccountModel.cls
-|  |--LeadModel.cls
-|--Tests
-|  |--OppportunityModelTest.cls
-|  |--AccountModelTest.cls
-|  |--LeadModelTest.cls
-|--Triggers
-|  |--Account.trigger
-|  |--Opportunity.trigger
-|--StaticResources
-   |--css
-   |  |--ssomething.css
-   |  |--somethingElse.css
-   |--js
-      |--pageA.js
-      |--pageB.js
-```
+
 
