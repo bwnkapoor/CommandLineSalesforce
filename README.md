@@ -5,7 +5,7 @@ Salesforce file structure is crappy, lets admit it.  We cannot create subpackage
 This project aims to resolve this problem, by allowing you to build your own filing system.
 
 
-Salesforce Directory Hierarchy
+# Salesforce Directory Hierarchy
 ```
 |
 |--Classes
@@ -25,7 +25,7 @@ Salesforce Directory Hierarchy
     |--AnotherPage.page
 ```
 
-Wouldn't you rather have something like this?
+# Custom Directory Hierarchy
 ```
 |
 |--Controllers
