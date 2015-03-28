@@ -25,7 +25,6 @@ Here is an example of the Salesforce File Hierarchy from what a developer cares 
     |--AnotherPage.page
 ```
 
-Your salesforce credentials will be stored in a yaml file.  Set configurator.logins in config.rb to the location of the credentials file.  Below is an example of the salesforce credentials file you will need to running the rake task login.
 To create a new login run
 
 ```
