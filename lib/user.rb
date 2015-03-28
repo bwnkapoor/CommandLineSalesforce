@@ -22,6 +22,7 @@ module User
       if File.exists?login_file
         data = YAML.load_file login_file
       else
+        FileUtils.mkdir_p File.dirname( configatron.logins )
         data = {}
       end
 
