@@ -2,7 +2,7 @@
 
 Salesforce file structure is crappy, lets admit it.  We cannot create subpackages, seperate controllers from Models, and have an actual extension for our static resouces.
 
-This project aims to resolve this problem, with allowing you to build your own filing system.
+This project aims to resolve this problem, by allowing you to build your own filing system.
 
 
 Here is an example of the Salesforce File Hierarchy from what a developer cares about.
@@ -26,22 +26,12 @@ Here is an example of the Salesforce File Hierarchy from what a developer cares 
 ```
 
 Your salesforce credentials will be stored in a yaml file.  Set configurator.logins in config.rb to the location of the credentials file.  Below is an example of the salesforce credentials file you will need to running the rake task login.
+To create a new login run
 
 ```
----
-client_secret: "..."
-client_id: "...."
-clients:
-  your_client_name:
-    your_client_instance:
-      username: username
-      password: password
-      local_root: client_name/codebase/staging/
-      client: client_name
-      instance: client_sandbox_name
-      security_token: abc
-      is_production: true/false
+rake user:new
 ```
+
 
 Here is how you would begin working on a project for a client.
 ```

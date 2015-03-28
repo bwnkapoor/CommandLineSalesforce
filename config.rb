@@ -1,5 +1,7 @@
 require 'configatron'
 
-configatron.logins = "/home/justin/buildTool/build_tool.yaml"
+configatron.logins = "./logins.yaml"
+configatron.templates_dir = "./templates"
 configatron.root_client_dir = "/home/justin/work"
-configatron.templates_dir = "/home/justin/.rake/templates"
+#configatron.client_secret = "create_your_own_salesforce_app"
+#configatron.client_id = "under setup/create/apps new connected app"

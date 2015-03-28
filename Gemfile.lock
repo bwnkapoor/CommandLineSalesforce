@@ -1,12 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    byebug (3.5.1)
-      columnize (~> 0.8)
-      debugger-linecache (~> 1.2)
-      slop (~> 3.6)
-    columnize (0.9.0)
-    debugger-linecache (1.2.0)
+    configatron (4.5.0)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.9.1)
@@ -32,7 +27,6 @@ GEM
     salesforce_bulk_api (0.0.11)
       json
       xml-simple
-    slop (3.6.0)
     trollop (2.1.2)
     xml-simple (1.1.5)
 
@@ -40,7 +34,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  byebug
+  configatron
   filewatcher
   httparty
   json

@@ -2,6 +2,7 @@ require 'yaml'
 require 'io/console'
 require 'fileutils'
 require 'configatron'
+require_relative '../patches/hash'
 
 module User
 
@@ -9,16 +10,44 @@ module User
     attr_reader :client, :instance, :instance_url, :oauth_token
 
     def initialize( fields={} )
-      @client, @instance = fields["client"], fields["instance"]
+      @client, @instance = fields[:client], fields[:instance]
+      @username, @client_id = fields[:username], fields[:client_id]
+      @security_token, @client_secret = fields[:security_token], fields[:client_secret]
+      @is_production, @local_root_directory = fields[:is_production], fields[:local_root_directory]
+      @password = fields[:password]
     end
+
+    def save
+      login_file = configatron.logins
+      if File.exists?login_file
+        data = YAML.load_file login_file
+      else
+        data = {}
+      end
+
+      if !data["clients"]
+        data["clients"] = {}
+      end
+      if !data["clients"][client]
+        data["clients"][client] = {}
+      end
+      data["clients"][client][instance] = to_hash
+
+      File.open( configatron.logins, 'w' ){ |f| YAML.dump(data, f) }
+    end
+
 
     def login
       ENV["SF_INSTANCE"] = instance
       ENV["SF_CLIENT"] = client
       ENV["SF_USERNAME"] = username
       ENV["SF_PASSWORD"] = password
-      ENV["SF_CLIENT_SECRET"] = client_secret
-      ENV["SF_CLIENT_ID"] = client_id
+      begin
+        ENV["SF_CLIENT_SECRET"] = configatron.client_secret!
+        ENV["SF_CLIENT_ID"] = configatron.client_id!
+      rescue
+        raise "config.rb must contain \"client_secret\" and \"client_id\".  Modify config.rb and us your connected app credentials"
+      end
       ENV["SF_SECURITY_TOKEN"] = security_token
       ENV["SF_HOST"] = is_production ? "login.salesforce.com" : "test.salesforce.com"
       @instance_url = Salesforce.instance.restforce.instance_url
@@ -29,34 +58,33 @@ module User
     end
 
     def username
+      if @username then return @username end
       data = YAML.load_file configatron.logins
-      data["clients"][client][instance]["username"]
+      @username = data["clients"][client][instance]["username"]
     end
 
     def to_hash
-      hash = {}
-      self.instance_variables.each {|var| hash[var.to_s.delete("@")] = self.instance_variable_get(var) }
-      hash
-    end
-
-    def client_id
-      data = YAML.load_file configatron.logins
-      data["client_id"].to_s
+      {
+      "username"=>username,
+      "password"=>password,
+      "local_root"=>"#{client}/codebase/#{instance}",
+      "is_production"=>(is_production == 'true'|| is_production=='y'),
+      "security_token"=>security_token,
+      "client"=>client,
+      "instance"=>instance
+      }
     end
 
     def security_token
+      if @security_token then return @security_token end
       data = YAML.load_file configatron.logins
-      data["clients"][client][instance]["security_token"]
+      @security_token = data["clients"][client][instance]["security_token"]
     end
 
-    def client_secret
-      data = YAML.load_file configatron.logins
-      data["client_secret"].to_s
-    end    
-
     def is_production
+      if @is_production then return @is_production end
       data = YAML.load_file configatron.logins
-      data["clients"][client][instance]["is_production"]
+      @is_production = data["clients"][client][instance]["is_production"]
     end
 
     def full_path
@@ -64,13 +92,15 @@ module User
     end
 
     def local_root_directory
+      if @local_root_directory then return @local_root_directory end
       data = YAML.load_file configatron.logins
-      data["clients"][client][instance]["local_root"]
+      @local_root_directory = data["clients"][client][instance]["local_root"]
     end
 
     def password
+      if @password then return @password end
       data = YAML.load_file configatron.logins
-      data["clients"][client][instance]["password"]
+      @password = data["clients"][client][instance]["password"]
     end
 
   end
@@ -131,34 +161,6 @@ module User
     running_user
   end
 
-  def self.create_new_user client, instance
-    if client && instance
-      data = YAML.load_file configatron.logins
-      puts "Username:"
-      username = $stdin.gets.chomp
-      puts "Password:"
-      password = $stdin.gets.chomp
-      puts "is production?"
-      is_production = $stdin.gets.chomp
-      if !data["clients"]
-        data["clients"] = {}
-      end
-      if !data["clients"][client]
-        data["clients"][client] = {}
-      end
-      data["clients"][client][instance] = {
-        "username"=>username,
-        "password"=>password,
-        "local_root"=>"#{client}/codebase/#{instance}",
-        "is_production"=>is_production == 'true'
-      }
-      File.open( configatron.logins, 'w' ){ |f| YAML.dump(data, f) }
-    else
-      raise "You must enter a client and instance"
-    end
-
-  end
-
   def self.who_am_i
     data = YAML.load_file configatron.logins
     client = data["running_user"]
@@ -171,9 +173,8 @@ module User
 
       if theClient && theClient[environment]
         creds = theClient[environment]
-        creds["client"] = client
-        creds["instance"] = environment
-        usr = User.new creds
+        creds["client"], creds["instance"] = client, environment
+        usr = User.new creds.symbolize_keys
         usr.login
         data["running_user"] = usr
         File.open(configatron.logins, 'w') { |f| YAML.dump(data, f) }

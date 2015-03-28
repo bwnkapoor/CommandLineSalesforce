@@ -16,8 +16,27 @@ task :monitor,[:client,:instance] do |t,args|
   do_watch
 end
 
-task :create_client,[:client, :instance] do |t,args|
-  User::create_new_user args[:client], args[:instance]
+namespace :user do
+  task :new do
+    puts "Client:"
+    client = $stdin.gets.chomp
+    puts "Instance:"
+    instance = $stdin.gets.chomp
+    puts "Username:"
+    username = $stdin.gets.chomp
+    puts "Password:"
+    password = $stdin.gets.chomp
+    puts "Security Token:"
+    security_token = $stdin.gets.chomp
+    puts "is production?"
+    is_production = $stdin.gets.chomp
+    user = User::User.new({
+                     "client": client, "instance": instance,
+                     "username": username, "password": password,
+                     "security_token": security_token, "is_production": is_production
+            })
+    user.save
+  end
 end
 
 task :clients_working_directory,[:client,:instance] do |t,args|
