@@ -146,6 +146,10 @@ class ApexClass
     classes
   end
 
+  def body=(val)
+    @body = val
+  end
+
   def save( metadataContainer )
     puts "Saving #{name}"
     if id
@@ -186,6 +190,13 @@ class ApexClass
     content = content.gsub("@className@", name)
     content
     self.new( {Name: name, Body: content} )
+  end
+
+  def self.create_batch template, name
+    cls = ApexClass.create_from_template template, name
+    puts "Type of sObject being batched: "
+    sobject_type = $stdin.gets.chomp
+    cls.body = cls.body.gsub("@batchType@", sobject_type)
   end
 
 end

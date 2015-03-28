@@ -2,9 +2,9 @@ global class @className@ implements Database.Batchable<SObject>, Schedulable, Da
 {
     global String query;
     global String errors;
-    
-    public static final String QUERY_STRING = 'Select Id from Account';
-    
+
+    public static final String QUERY_STRING = 'Select Id from @batchType@';
+
     global @className@( String query )
     {
         this.query = query;
@@ -16,13 +16,28 @@ global class @className@ implements Database.Batchable<SObject>, Schedulable, Da
         return Database.getQueryLocator( query );
     }
 
-    global void execute(Database.BatchableContext bc, Sobject[] scope)
+    global void execute(Database.BatchableContext bc, List<@batchType@> scope)
     {
+        // Do your stuff
+        List<Database.SaveResult> srList = Database.update( scope, false );
+        for( Database.SaveResult sr : srList )
+        {
+            if( !sr.isSuccess() )
+            {
+                errors += 'The following errors occured on Opportunity: ' + sr.getId() + '\n';
+                for( Database.Error err : sr.getErrors() )
+                {
+                    errors += 'Status Code: ' + err.getStatusCode() + '\n';
+                    errors += 'Message: ' + err.getMessage() + '\n';
+                    errors += scope.getSObjectType() + ' fields that affected this error: ' + err.getFields() ) + '\n';
+                }
+            }
+        }
     }
 
     global void finish(Database.BatchableContext bc)
     {
-        if ( errors != '' )
+        if( errors != '' )
         {
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
             mail.setTargetObjectId( UserInfo.getUserId() );
@@ -33,10 +48,10 @@ global class @className@ implements Database.Batchable<SObject>, Schedulable, Da
             Messaging.sendEmail( new Messaging.SingleEmailMessage[] { mail } );
         }
     }
-    
+
     global void execute(SchedulableContext SC)
-    {                        
+    {
         @className@ batch = new @className@( QUERY_STRING );
         Database.executeBatch( batch );
-    } 
+    }
 }

@@ -1,10 +1,10 @@
 require 'yaml'
 require 'io/console'
 require 'fileutils'
+require 'configatron'
 
 module User
-  LOGIN_PATH = '/home/justin/buildTool/build_tool.yaml'
-  ROOT_DIR = "/home/justin/work/"
+
   class User
     attr_reader :client, :instance, :instance_url, :oauth_token
 
@@ -29,7 +29,7 @@ module User
     end
 
     def username
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       data["clients"][client][instance]["username"]
     end
 
@@ -40,36 +40,36 @@ module User
     end
 
     def client_id
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       data["client_id"].to_s
     end
 
     def security_token
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       data["clients"][client][instance]["security_token"]
     end
 
     def client_secret
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       data["client_secret"].to_s
     end    
 
     def is_production
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       data["clients"][client][instance]["is_production"]
     end
 
     def full_path
-      ROOT_DIR + local_root_directory.to_s
+      configatron.root_client_dir + local_root_directory.to_s
     end
 
     def local_root_directory
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       data["clients"][client][instance]["local_root"]
     end
 
     def password
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       data["clients"][client][instance]["password"]
     end
 
@@ -84,13 +84,13 @@ module User
   end
 
   def self.logout
-    data = YAML.load_file LOGIN_PATH
+    data = YAML.load_file configatron.logins
     data.delete("running_user")
-    File.open(LOGIN_PATH, 'w') { |f| YAML.dump(data, f) }
+    File.open(configatron.logins, 'w') { |f| YAML.dump(data, f) }
   end
 
   def self.logins client=nil
-    data = YAML.load_file LOGIN_PATH
+    data = YAML.load_file configatron.logins
     if( client )
       begin
         data["clients"][client].each_key do |sandbox|
@@ -120,7 +120,7 @@ module User
 
   def self.get_credentials client=nil, environment=nil
     if( client && environment )
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       yaml_data = data["clients"][client][environment]
       yaml_data["client"] = client
       yaml_data["instance"] = environment
@@ -133,7 +133,7 @@ module User
 
   def self.create_new_user client, instance
     if client && instance
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       puts "Username:"
       username = $stdin.gets.chomp
       puts "Password:"
@@ -152,7 +152,7 @@ module User
         "local_root"=>"#{client}/codebase/#{instance}",
         "is_production"=>is_production == 'true'
       }
-      File.open( LOGIN_PATH, 'w' ){ |f| YAML.dump(data, f) }
+      File.open( configatron.logins, 'w' ){ |f| YAML.dump(data, f) }
     else
       raise "You must enter a client and instance"
     end
@@ -160,13 +160,13 @@ module User
   end
 
   def self.who_am_i
-    data = YAML.load_file LOGIN_PATH
+    data = YAML.load_file configatron.logins
     client = data["running_user"]
   end
 
   private
     def self.login_with_creds client, environment
-      data = YAML.load_file LOGIN_PATH
+      data = YAML.load_file configatron.logins
       theClient = data["clients"][client]
 
       if theClient && theClient[environment]
@@ -176,7 +176,7 @@ module User
         usr = User.new creds
         usr.login
         data["running_user"] = usr
-        File.open(LOGIN_PATH, 'w') { |f| YAML.dump(data, f) }
+        File.open(configatron.logins, 'w') { |f| YAML.dump(data, f) }
         usr
       else
         raise "#{client.to_s} #{environment.to_s} does not exist"

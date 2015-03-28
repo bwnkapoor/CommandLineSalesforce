@@ -1,8 +1,8 @@
 require 'yaml'
+require 'configatron'
 
 module ApexBase
   SYMBOLIC_FILE_NAME = 'symbolic_table.yaml'
-  BASE_DIR = "/home/justin/work"
 
   attr_reader :name
 
@@ -19,7 +19,7 @@ module ApexBase
 
   def folder
     instance_dir = User.session_user.local_root_directory
-    BASE_DIR + "/#{instance_dir}/#{@folder}"
+    configatron.root_client_dir + "/#{instance_dir}#{@folder}"
   end
 
   def body
@@ -166,15 +166,20 @@ module ApexBase
     end
   end
 
-  def self.create file_type, template=nil
+  def self.create file_type, template=nil, creation_method=nil
     type = self.apex_member_factory file_type
     if !template
       template = type
     end
-    file = File.open("/home/justin/.rake/templates/#{template}", "r")
+    file = File.open("#{configatron.templates_dir}#{template}", "r")
     puts "file name:"
     name = $stdin.gets.chomp
-    member = type.create_from_template file, name
+    if !creation_method
+      member = type.create_from_template file, name
+    else
+      member = creation_method file, name
+    end
+
     member.write_file
     member.write_symbolic_links
   end

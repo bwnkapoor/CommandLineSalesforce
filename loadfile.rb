@@ -10,17 +10,6 @@ require_relative 'lib/apexcomponent'
 require_relative 'lib/apexstaticresource'
 require_relative 'lib/apextrigger'
 
-
-def write files
-  running_user = User.get_credentials
-  base_dir = running_user.local_root_directory
-  if !base_dir then base_dir = '.' end
-  files.each do |sf_file|
-    FileUtils.mkdir_p sf_file.folder
-    File.open( sf_file.path.to_s, "w" ){ |f| f.write( sf_file.body ) }
-  end
-end
-
 def pull file_names
   puts "pulling"
   files = []
@@ -32,25 +21,16 @@ def pull file_names
     begin
       type = ApexBase::apex_member_factory( file )
       member = ApexBase::pull( [file_name], type )
-
+      member.each{ |base|
+        base.write_file
+        base.write_symbolic_links
+      }
       files.concat( member )
     rescue Exception=>e
+      puts e
     end
   end
-  write files
-  create_links files
   puts "done"
-end
-
-def create_links files
-  files.each do |file|
-    FileUtils.mkdir_p file.symbolic_folder
-    begin
-      FileUtils.ln_s "#{file.path}", "#{file.symbolic_path}"
-    rescue Errno::EEXIST
-
-    end
-  end
 end
 
 def push files_paths_to_save
@@ -95,6 +75,4 @@ def push files_paths_to_save
   else
     puts "We have an unknown error"
   end
-
-
 end

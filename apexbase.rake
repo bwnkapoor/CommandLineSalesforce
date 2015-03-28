@@ -1,3 +1,4 @@
+require_relative 'config'
 require_relative 'lib/apexbase'
 require_relative 'lib/workflowrule'
 require_relative 'lib/validationrule'
@@ -8,7 +9,7 @@ namespace :apexclass do
   end
 
   task :create_batch do
-    ApexBase.create "template.cls", "ApexBatch"
+    ApexClass.create_batch
   end
 end
 

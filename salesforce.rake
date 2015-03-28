@@ -3,6 +3,7 @@ require 'yaml'
 require 'find'
 require 'fileutils'
 
+require_relative 'config'
 require_relative 'loadfile'
 require_relative 'dependencies'
 require_relative 'lib/readpackagexml'
