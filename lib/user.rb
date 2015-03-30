@@ -61,7 +61,7 @@ module User
     def username
       if @username then return @username end
       data = YAML.load_file configatron.logins
-      @username = data["clients"][client][instance]["username"]
+      @username = data["clients"][client][instance][:username]
     end
 
     def to_hash
@@ -79,13 +79,13 @@ module User
     def security_token
       if @security_token then return @security_token end
       data = YAML.load_file configatron.logins
-      @security_token = data["clients"][client][instance]["security_token"]
+      @security_token = data["clients"][client][instance][:security_token]
     end
 
     def is_production
       if @is_production then return @is_production end
       data = YAML.load_file configatron.logins
-      @is_production = data["clients"][client][instance]["is_production"]
+      @is_production = data["clients"][client][instance][:is_production]
     end
 
     def full_path
@@ -95,13 +95,13 @@ module User
     def local_root_directory
       if @local_root_directory then return @local_root_directory end
       data = YAML.load_file configatron.logins
-      @local_root_directory = data["clients"][client][instance]["local_root"]
+      @local_root_directory = data["clients"][client][instance][:local_root]
     end
 
     def password
       if @password then return @password end
       data = YAML.load_file configatron.logins
-      @password = data["clients"][client][instance]["password"]
+      @password = data["clients"][client][instance][:password]
     end
 
   end

@@ -112,7 +112,6 @@ module ApexBase
       symbolic_link = YAML.load_file SYMBOLIC_FILE_NAME
     rescue Exception=>e
       symbolic_link = {}
-      puts "Symbolic Table file Not found"
     end
     symbolic_link
   end
