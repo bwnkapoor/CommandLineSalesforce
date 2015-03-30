@@ -66,13 +66,13 @@ module User
 
     def to_hash
       {
-      "username"=>username,
-      "password"=>password,
-      "local_root"=>"#{client}/codebase/#{instance}",
-      "is_production"=>(is_production == 'true'|| is_production=='y'),
-      "security_token"=>security_token,
-      "client"=>client,
-      "instance"=>instance
+      :username=>username,
+      :password=>password,
+      :local_root=>"#{client}/codebase/#{instance}",
+      :is_production=>(is_production == 'true'|| is_production=='y'),
+      :security_token=>security_token,
+      :client=>client,
+      :instance=>instance
       }
     end
 
