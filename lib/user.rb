@@ -89,7 +89,7 @@ module User
     end
 
     def full_path
-      configatron.root_client_dir + local_root_directory.to_s
+      configatron.root_client_dir + "/" + local_root_directory.to_s
     end
 
     def local_root_directory
